@@ -41,7 +41,7 @@ def main(page: ft.Page):
                     password_field,
                     error_text,
                     ft.ElevatedButton(
-                        "Login", 
+                        "Login",
                         on_click=login_click,
                         style=ft.ButtonStyle(shape=ft.RoundedRectangleBorder(radius=10)),
                         width=200
