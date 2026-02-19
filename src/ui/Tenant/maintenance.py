@@ -3,19 +3,26 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # Đoạn code trên đang thêm thư mục cha của file hiện tại vào sys.path để có thể import các module từ thư mục đó để chạy test. Điều này giúp tránh lỗi ImportError khi import các module khác trong dự án. Sau này sẽ sửa lại, dùng .. để import trực tiếp thay vì sửa sys.path như này.
 
+from datetime import datetime
 from base_dashboard import ACCENT_BLUE, ACCENT_BLUE_LIGHT, CARD_BG, TEXT_DARK, TEXT_MUTED, BaseDashboard
 from flet_charts import PieChart, PieChartSection
 import flet as ft
 
+# 1. Mock Data Global (Đưa ra ngoài để cập nhật dữ liệu khi Submit)
+# Cấu trúc: [ID, Category, Description, Priority, Status, Reported, Completed]
+maintenance_data = [
+    [101, "Plumbing", "Kitchen sink leaking", "High", "In Progress", "2026-02-15", "-"],
+    [102, "Electrical", "AC Filter Cleaning", "Low", "Completed", "2026-01-22", "2026-01-23"],
+    [103, "Furniture", "Broken door handle", "Medium", "Pending", "2026-02-10", "-"],
+]
+
 def show_maintenance(dash, *args):
     if not dash: return
+    global maintenance_data
     dash.content_column.controls.clear()
     # 1. Mock Data
-    maintenance_data = [
-        (101, "Plumbing", "Kitchen sink leaking", "High", "In Progress", "2026-02-15", 45.0, 1.5),
-        (102, "Electrical", "AC Filter Cleaning", "Low", "Completed", "2026-01-22", 20.0, 0.5),
-        (103, "Furniture", "Broken door handle", "Medium", "Pending", "TBD", 0.0, 0.0),
-    ]
+    maintenance_data.sort(key=lambda x: x[5], reverse=True)
+    
     action_bar = ft.Container(
         padding=ft.padding.symmetric(vertical=10),
         content=ft.Row([
@@ -30,6 +37,7 @@ def show_maintenance(dash, *args):
             )
         ], alignment="spaceBetween")
     )
+    
     rows = []
     for m in maintenance_data:
         p_color = ft.Colors.RED_700 if m[3] == "High" else ft.Colors.ORANGE_700 if m[3] == "Medium" else ft.Colors.BLUE_GREY_400
@@ -38,14 +46,13 @@ def show_maintenance(dash, *args):
         rows.append(
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"#{m[0]}",weight=ft.FontWeight.W_500, color=TEXT_DARK)),
-                    ft.DataCell(ft.Text(m[1],weight=ft.FontWeight.W_500,color=TEXT_DARK)),
-                    ft.DataCell(ft.Container(content=ft.Text(m[2],weight=ft.FontWeight.W_500,color=TEXT_DARK, overflow=ft.TextOverflow.ELLIPSIS), width=200)),
-                    ft.DataCell(ft.Text(m[3], color=p_color, weight="Bold")),
-                    ft.DataCell(ft.Container(content=ft.Text(m[4], color="white", size=10, weight="Bold"), bgcolor=s_color, padding=ft.padding.symmetric(vertical=4, horizontal=10), border_radius=15)),
-                    ft.DataCell(ft.Text(m[5], weight=ft.FontWeight.W_500, color=TEXT_DARK)),
-                    ft.DataCell(ft.Text(f"${m[6]:.2f}", weight=ft.FontWeight.W_500, color=TEXT_DARK)),
-                    ft.DataCell(ft.Text(f"{m[7]}h", weight=ft.FontWeight.W_500, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(f"#{m[0]}", weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(m[1], weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Container(content=ft.Text(m[2], weight="w500", color=TEXT_DARK, overflow=ft.TextOverflow.ELLIPSIS), width=200)),
+                    ft.DataCell(ft.Text(m[3], color=p_color, weight="bold")),
+                    ft.DataCell(ft.Container(content=ft.Text(m[4], color="white", size=10, weight="bold"), bgcolor=s_color, padding=ft.padding.symmetric(vertical=4, horizontal=10), border_radius=15)),
+                    ft.DataCell(ft.Text(m[5], weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(m[6], weight="w500", color=TEXT_DARK)),
                 ]
             )
         )
@@ -55,21 +62,21 @@ def show_maintenance(dash, *args):
         bgcolor=CARD_BG, padding=20, border_radius=12, expand=True,
         content=ft.Column([
             ft.DataTable(
-                column_spacing=35,
+                expand=True,
+                column_spacing=45,
                 heading_row_color=ft.Colors.BLUE_GREY_50,
                 columns=[
-                    ft.DataColumn(ft.Text("ID", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Category", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Description", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Priority", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Status", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Scheduled", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Cost", weight="bold", color=TEXT_DARK)),
-                    ft.DataColumn(ft.Text("Time", weight="bold", color=TEXT_DARK)),
+                    ft.DataColumn(ft.Text("ID", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Category", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Description", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Priority", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Status", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Reported", weight="bold", color=ft.Colors.BLUE_900)),
+                    ft.DataColumn(ft.Text("Completed", weight="bold", color=ft.Colors.BLUE_900)),
                 ],
                 rows=rows,
             )
-        ], scroll=ft.ScrollMode.ALWAYS)
+        ], scroll=ft.ScrollMode.AUTO)
     )
     
     # 3a. DTA CHART (Mock Data) - Replace with actual chart component later
@@ -100,7 +107,6 @@ def show_maintenance(dash, *args):
         ])
     )
     # 3b. Lists
-
     sent_card = ft.Container(
         bgcolor=CARD_BG, padding=20, border_radius=12, width=320,
         content=ft.Column([
@@ -108,8 +114,13 @@ def show_maintenance(dash, *args):
             ft.Divider(),
             ft.ListView(
                 spacing=10,
+                height=300,
                 controls=[
-                    ft.ListTile(title=ft.Text(f"Request #{m[0]}", weight="bold", color=TEXT_DARK), subtitle=ft.Text(f"{m[1]} - {m[5]}"))
+                    ft.ListTile(
+                        leading=ft.Icon(ft.Icons.BUILD_CIRCLE_ROUNDED, color=ACCENT_BLUE),
+                        title=ft.Text(f"Request #{m[0]}", weight="bold", color=TEXT_DARK),
+                        subtitle=ft.Text(f"{m[1]} - {m[5]}"),
+                    )
                     for m in maintenance_data
                 ]
             )
@@ -120,12 +131,13 @@ def show_maintenance(dash, *args):
     dash.content_column.controls = [
         action_bar,
         ft.Row([table_container]),
-        ft.Row([chart_card, sent_card], spacing=20)
+        ft.Row([chart_card, sent_card], spacing=20, vertical_alignment="start")
     ]
     dash.page.update()
         
 def open_maintenance_form(dash):
     """Popup form for adding new request"""
+    current_date = datetime.now().strftime("%Y-%m-%d")
     ref_category = ft.Dropdown(
         label="Category", value="Plumbing",
         options=[ft.dropdown.Option(x) for x in ["Plumbing", "Electrical", "Furniture", "Others"]],
@@ -145,32 +157,39 @@ def open_maintenance_form(dash):
         if not ref_desc.value:
             dash.show_message("Please provide a description of the issue!")
             return
+        global maintenance_data
 
         # Thực hiện lưu vào database
         try:
-            # db.save_maintenance(ref_category.value, ref_priority.value, ref_desc.value)
-            print(f"Submitting: {ref_category.value} | Priority: {ref_priority.value}")
+            new_id = max([m[0] for m in maintenance_data]) + 1 if maintenance_data else 1
+            # Thêm dữ liệu mới vào List [ID, Cat, Desc, Priority, Status, Reported, Completed]
+            new_record = [
+                new_id,
+                ref_category.value,
+                ref_desc.value,
+                ref_priority.value,
+                "Pending",
+                current_date,
+                "-"
+            ]
+            maintenance_data.append(new_record)
             
             dash.show_message("Success! Request submitted successfully!")
-            
-            if hasattr(dash, "active_dialog"):
-                dash.active_dialog.open = False
-            elif dash.page.dialog:
-                dash.page.dialog.open = False
-
+            dash.close_dialog()
             show_maintenance(dash)
-            dash.page.update()
             
         except Exception as ex:
             dash.show_message(f"Submit error: {str(ex)}")
-
+            
     form_content = ft.Column([
-        ft.Divider(height=10, color="transparent"),
+        ft.Text("Please fill out the details below", color=TEXT_MUTED),
         ref_category,
         ref_priority,
         ref_desc,
-        ft.Text("* Costs and dates will be updated by Admin.", size=14, color=TEXT_MUTED, italic=True),
-        ft.Text(f"Reported Date: 2026-02-18", size=12, color=TEXT_MUTED),
+        ft.Row([
+            ft.Icon(ft.Icons.CALENDAR_MONTH, size=16, color=TEXT_MUTED),
+            ft.Text(f"Reported Date: {current_date}", size=12, color=TEXT_MUTED, weight="bold"),
+        ]),
     ], spacing=20, width=450)
     
     actions = [

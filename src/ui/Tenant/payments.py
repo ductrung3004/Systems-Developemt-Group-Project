@@ -2,40 +2,52 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from datetime import datetime
 from base_dashboard import *
 import flet as ft
 
+transactions_data = [
+    ["2025-10-01", "Monthly Rent - October", 1200.00, "Pending"],
+    ["2025-09-05", "Monthly Rent - September", 1200.00, "Paid"],
+    ["2025-08-28", "Water Bill - August", 50.00, "Paid"],
+]
+
 def show_payments(dash, *args):
     if not dash: return
+    global transactions_data
     dash.content_column.controls.clear()
+    transactions_data.sort(key=lambda x: x[0], reverse=True)
+    
+    total_outstanding = sum(t[2] for t in transactions_data if t[3] == "Pending")
+    last_paid = next((f"${t[2]:,.2f} ({t[0]})" for t in transactions_data if t[3] == "Paid"), "$0.00")
     
     # 1. Balance Overview (Cards)
     balance_cards = ft.Row(
         spacing=20,
         controls=[
-            dash.create_stat_card("Total Outstanding", "$1,250.00", ft.Icons.MONEY_OFF_ROUNDED, highlight=True),
-            dash.create_stat_card("Last Paid", "$1,200.00 (Sep 05)", ft.Icons.CHECK_CIRCLE_ROUNDED),
-            dash.create_stat_card("Next Paid", "$1,200.00 (Oct 05)", ft.Icons.CHECK_CIRCLE_ROUNDED),
+            dash.create_stat_card("Total Outstanding", f"${total_outstanding:,.2f}", ft.Icons.MONEY_OFF_ROUNDED, highlight=True),
+            dash.create_stat_card("Last Paid", last_paid, ft.Icons.CHECK_CIRCLE_ROUNDED),
+            dash.create_stat_card("Next Due", "$1,200.00 (Nov 05)", ft.Icons.CALENDAR_MONTH_ROUNDED),
         ]
     )
     
     # 2. Transaction History
-    transactions = [
-        ("2025-10-01", "Monthly Rent - October", "$1,200.00", "Pending"),
-        ("2025-09-05", "Monthly Rent - September", "$1,200.00", "Paid"),
-        ("2025-08-28", "Water Bill - August", "$50.00", "Paid"),
-    ]
     rows = []
-    for date, desc, amt, status in transactions:
+    for date, desc, amt, status in transactions_data:
         status_color = ft.Colors.ORANGE_700 if status == "Pending" else ft.Colors.GREEN_700
         rows.append(
             ft.DataRow(
                 cells=[
                     ft.DataCell(ft.Text(date, color=TEXT_DARK, weight=ft.FontWeight.W_500)),
                     ft.DataCell(ft.Text(desc, color=TEXT_DARK, weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(amt, weight=ft.FontWeight.BOLD, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(f"${amt:,.2f}", weight=ft.FontWeight.BOLD, color=TEXT_DARK)),
                     ft.DataCell(
-                    ft.Text(status, color=status_color, weight=ft.FontWeight.BOLD)
+                        ft.Container(
+                            content=ft.Text(status, color="white", size=10, weight="bold"),
+                            bgcolor=status_color,
+                            padding=ft.padding.symmetric(vertical=4, horizontal=10),
+                            border_radius=15
+                        )
                     ),
                 ]
             )
@@ -89,7 +101,8 @@ def show_payments(dash, *args):
         spacing=20
     )
     dash.content_column.controls = [balance_cards,main_content]
-
+    dash.page.update()
+    
 def open_payment_modal(dash):
     ref_amount = ft.TextField(
         label="Enter Amount",
@@ -113,12 +126,27 @@ def open_payment_modal(dash):
         label_style=ft.TextStyle(weight="bold")
     )
     def handle_confirm_payment(e):
-        if not ref_amount.value or float(ref_amount.value) <= 0:
-            dash.show_message("Please enter a valid amount!")
+        try:
+            val = float(ref_amount.value)
+            if val <= 0:
+                raise ValueError
+        except ValueError:
+            dash.show_message("Invalid Amount! Please enter a valid number (e.g. 250.50)")
+            ref_amount.border_color = ft.Colors.RED
+            ref_amount.update()
             return
-        print(f"DB Action: Processing {ref_amount.value} via {ref_method.value}")
         
-        dash.show_message(f"Success! Paid ${ref_amount.value} via {ref_method.value}")
+        global transactions_data
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        transactions_data.append([
+            current_date,
+            f"Payment via {ref_method.value}",
+            val,
+            "Paid"
+        ])
+        
+        dash.show_message(f"Success! Paid ${val:,.2f} successfully!")
         dash.close_dialog()
         show_payments(dash)
 
