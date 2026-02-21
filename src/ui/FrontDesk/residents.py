@@ -60,7 +60,7 @@ def show_residents(dash, *args):
         options=[ft.dropdown.Option("All Blocks"), ft.dropdown.Option("A"), ft.dropdown.Option("B")],
         value="All Blocks"
     )
-    apply_btn = ft.ElevatedButton(
+    apply_btn = ft.Button(
         "Apply",
         icon=ft.Icons.SEARCH_ROUNDED,
         bgcolor=ACCENT_BLUE,
