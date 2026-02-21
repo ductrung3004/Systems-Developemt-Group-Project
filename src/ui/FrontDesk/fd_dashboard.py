@@ -82,8 +82,8 @@ class FrontDeskDashboard(BaseDashboard):
                         ft.Container(
                             bgcolor="white", padding=20, border_radius=12,
                             content=ft.Column([
-                                ft.ListTile(leading=ft.Icon(ft.Icons.LOCAL_SHIPPING, color= ACCENT_BLUE), title=ft.Text("Room 302 - SPX", color=TEXT_DARK), subtitle=ft.Text("10 mins ago")),
-                                ft.ListTile(leading=ft.Icon(ft.Icons.LOCAL_SHIPPING, color=ACCENT_BLUE), title=ft.Text("Room 105 - GrabFood", color=TEXT_DARK), subtitle=ft.Text("25 mins ago")),
+                                ft.ListTile(leading=ft.Icon(ft.Icons.LOCAL_SHIPPING, color= ACCENT_BLUE), title=ft.Text("Unit 302 - SPX", color=TEXT_DARK), subtitle=ft.Text("10 mins ago")),
+                                ft.ListTile(leading=ft.Icon(ft.Icons.LOCAL_SHIPPING, color=ACCENT_BLUE), title=ft.Text("Unit 105 - GrabFood", color=TEXT_DARK), subtitle=ft.Text("25 mins ago")),
                             ])
                         )
                     ]

@@ -48,7 +48,7 @@ def show_residents(dash, *args):
 
     # --- 2. SEARCH & FILTER SECTION ---
     dash.res_search_box = ft.TextField(
-        label="Search by Name or Room...",
+        label="Search by Name or Unit...",
         prefix_icon=ft.Icons.SEARCH,
         expand=True, border_radius=10, bgcolor="white", color=TEXT_DARK,
     )
@@ -101,7 +101,7 @@ def show_residents(dash, *args):
                 ft.ListTile(
                     leading=ft.Icon(ft.Icons.PERSON_OUTLINE, color=ACCENT_BLUE),
                     title=ft.Text(r["name"], size=13, weight="bold", color=TEXT_DARK),
-                    subtitle=ft.Text(f"Room {r['room']}", size=11, color=TEXT_MUTED),
+                    subtitle=ft.Text(f"Unit {r['room']}", size=11, color=TEXT_MUTED),
                     dense=True
                 ) for r in test_residents_data[:3]
             ])
@@ -131,7 +131,7 @@ def apply_resident_filters(dash):
             column_spacing=30,
             heading_row_color=ft.Colors.BLUE_GREY_50,
             columns=[
-                ft.DataColumn(ft.Text("Room", weight="bold", color=TEXT_DARK)),
+                ft.DataColumn(ft.Text("Unit", weight="bold", color=TEXT_DARK)),
                 ft.DataColumn(ft.Text("Full Name", weight="bold", color=TEXT_DARK)),
                 ft.DataColumn(ft.Text("Type", weight="bold", color=TEXT_DARK)),
                 ft.DataColumn(ft.Text("Contact", weight="bold", color=TEXT_DARK)),
@@ -146,7 +146,7 @@ def draw_resident_registration(dash, *args):
     dash.content_column.controls.clear()
 
     ref_block = ft.TextField(label="Block", expand=True, border_radius=8, color=TEXT_DARK, hint_text="e.g. A")
-    ref_room = ft.TextField(label="Room Number", expand=True, border_radius=8, color=TEXT_DARK)
+    ref_room = ft.TextField(label="Unit Number", expand=True, border_radius=8, color=TEXT_DARK)
     ref_name = ft.TextField(label="Full Name", expand=True, border_radius=8, color=TEXT_DARK)
     ref_email = ft.TextField(label="Email Address", expand=True, border_radius=8, color=TEXT_DARK)
     ref_phone = ft.TextField(label="Phone Number", expand=True, border_radius=8, color=TEXT_DARK)
@@ -214,7 +214,7 @@ def draw_resident_registration(dash, *args):
 
 def handle_save_resident(dash, block, room, name, phone, res_type):
     if not room or not name or not phone:
-        dash.show_message("Error: Room, Name and Phone are required!")
+        dash.show_message("Error: Unit, Name and Phone are required!")
         return
 
     try:

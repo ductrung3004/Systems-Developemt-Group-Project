@@ -151,7 +151,7 @@ class TenantDashboard(BaseDashboard):
                 ft.Column([
                     ft.Text("Johnathan Doe", size=24, weight="bold", color=TEXT_DARK),
                     ft.Text("Tenant ID: #PAMS-2026-001", size=14, weight="bold", color=TEXT_MUTED),
-                    ft.Text("Apartment: Block B - Room 302", size=14, weight="bold", color=ACCENT_BLUE),
+                    ft.Text("Apartment: Block B - Unit 302", size=14, weight="bold", color=ACCENT_BLUE),
                 ], spacing=5, expand=True),
                 # Control Buttons
                 ft.Column([

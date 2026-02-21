@@ -14,7 +14,7 @@ from base_dashboard import *
 from logic.search import *
 
 # Mock data để test (Sau này sẽ thay bằng SQL SELECT)
-# Cấu trúc: [ID, Room, Category, Description, Priority, Status, Date]
+# Cấu trúc: [ID, Unit, Category, Description, Priority, Status, Date]
 test_work_orders = [
     {"id": "WO-001", "room": "302", "category": "Plumbing", "desc": "Kitchen sink leaking", "priority": "High", "status": "In Progress", "date": "2026-02-15", "days": 5},
     {"id": "WO-002", "room": "105", "category": "Electrical", "desc": "AC not cooling", "priority": "Medium", "status": "Pending", "date": "2026-02-16", "days": 4},
@@ -56,7 +56,7 @@ def show_work_orders(dash, *args):
     
     # --- 3. FILTER BAR ---
     dash.wo_search = ft.TextField(
-        label="Search by Room or Category",
+        label="Search by Unit or Category",
         prefix_icon=ft.Icons.SEARCH,
         border_radius=10,
         color=TEXT_DARK,
@@ -67,6 +67,7 @@ def show_work_orders(dash, *args):
         icon=ft.Icons.SEARCH_ROUNDED,
         bgcolor=ACCENT_BLUE,
         color="white",
+        height=40,
         on_click=lambda _: apply_work_order_filters(dash)
     )
 
@@ -107,7 +108,7 @@ def apply_work_order_filters(dash):
     
 def open_create_order_modal(dash):
     # --- 1. REFS TO COLLECT DATA ---
-    ref_room = ft.TextField(label="Room Number", hint_text="e.g. 302 or Common Area", border_color=ACCENT_BLUE)
+    ref_room = ft.TextField(label="Unit Number", hint_text="e.g. 302 or Common Area", border_color=ACCENT_BLUE)
     ref_category = ft.Dropdown(
         label="Category",
         options=[ft.dropdown.Option(x) for x in ["Plumbing", "Electrical", "General", "Elevator"]],
@@ -192,7 +193,7 @@ def _create_work_order_item(dash, order):
                     ft.Text(cat, weight="bold", size=14, color=TEXT_DARK),
                     ft.Text(f"• {wo_id}", size=11, color=TEXT_MUTED),
                 ], spacing=10),
-                ft.Text(f"Room: {room}", size=12, color=TEXT_MUTED, weight=ft.FontWeight.W_500),
+                ft.Text(f"Unit: {room}", size=12, color=TEXT_MUTED, weight=ft.FontWeight.W_500),
                 ft.Text(desc, size=13, color=TEXT_MUTED, max_lines=1, overflow="ellipsis"),
             ], expand=True),
             ft.Column([

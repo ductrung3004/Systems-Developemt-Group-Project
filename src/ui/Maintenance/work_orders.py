@@ -120,7 +120,7 @@ def apply_wo_filters(dash):
             heading_row_height=50,
             columns=[
                 ft.DataColumn(ft.Text("ID", weight="bold", color=ACCENT_BLUE)),
-                ft.DataColumn(ft.Text("Room", weight="bold", color=ACCENT_BLUE)),
+                ft.DataColumn(ft.Text("Unit", weight="bold", color=ACCENT_BLUE)),
                 ft.DataColumn(ft.Text("Issue", weight="bold", color=ACCENT_BLUE)),
                 ft.DataColumn(ft.Text("Priority", weight="bold", color=ACCENT_BLUE)),
                 ft.DataColumn(ft.Text("Status", weight="bold", color=ACCENT_BLUE)),
@@ -144,9 +144,8 @@ def handle_status_change(dash, wo_id):
     apply_wo_filters(dash)
 
 def open_new_request_form(dash):
-    """Form để Tenant hoặc Staff báo cáo lỗi mới"""
     current_date = datetime.now().strftime("%Y-%m-%d")
-    room_input = ft.TextField(label="Room / Common Area", hint_text="e.g. A-1204 or Lobby", border_color=ACCENT_BLUE)
+    room_input = ft.TextField(label="Unit / Common Area", hint_text="e.g. A-1204 or Lobby", border_color=ACCENT_BLUE)
     category_input = ft.Dropdown(
         label="Category", value="General", border_color=ACCENT_BLUE,
         options=[ft.dropdown.Option(x) for x in ["Plumbing", "Electrical", "HVAC", "Security", "General"]]
@@ -159,7 +158,7 @@ def open_new_request_form(dash):
 
     def submit_new_request(e):
         if not room_input.value or not issue_input.value:
-            dash.show_message("Please fill in Room and Description!")
+            dash.show_message("Please fill in Unit and Description!")
             return
         
         global test_work_orders

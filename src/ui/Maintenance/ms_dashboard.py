@@ -98,7 +98,7 @@ class MaintenanceDashboard(BaseDashboard):
             content=ft.Row([
                 ft.Icon(ft.Icons.REPORT_PROBLEM_ROUNDED, color=ft.Colors.RED_700),
                 ft.Column([
-                    ft.Text(f"Room {room}", weight="bold", color=TEXT_DARK),
+                    ft.Text(f"Unit {room}", weight="bold", color=TEXT_DARK),
                     ft.Text(issue, color=TEXT_MUTED, size=13),
                 ], expand=True, spacing=2),
                 ft.Text(label, size=11, weight="bold", color=ft.Colors.RED_700),

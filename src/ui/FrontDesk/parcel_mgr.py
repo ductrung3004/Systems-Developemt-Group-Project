@@ -25,7 +25,7 @@ def show_parcel(dash, *args):
     dash.content_column.controls.clear()
     
     dash.parcel_search = ft.TextField(
-        label="Search Room or Carrier",
+        label="Search Unit or Carrier",
         prefix_icon=ft.Icons.SEARCH,
         border_radius=10,
         bgcolor="white",
@@ -122,7 +122,7 @@ def apply_parcel_filters(dash):
 def draw_add_parcel_form(dash, *args):
     dash.content_column.controls.clear()
     
-    ref_room = ft.TextField(label="Room Number", expand=True, hint_text="e.g. 302", border_radius=8, color=TEXT_DARK)
+    ref_room = ft.TextField(label="Unit Number", expand=True, hint_text="e.g. 302", border_radius=8, color=TEXT_DARK)
     ref_recipient = ft.TextField(label="Recipient Name (Optional)", expand=True, border_radius=8, color=TEXT_DARK)
     ref_carrier = ft.Dropdown(
         label="Carrier",
@@ -151,7 +151,7 @@ def draw_add_parcel_form(dash, *args):
     
     def handle_save_parcel(e):
         if not ref_room.value or not ref_carrier.value:
-            dash.show_message("Error: Room and Carrier are required!")
+            dash.show_message("Error: Unit and Carrier are required!")
             return
         
         parcels_data.insert(0, {
@@ -217,7 +217,7 @@ def _create_parcel_item(dash, item):
         content=ft.Row([
             ft.Icon(ft.Icons.INVENTORY_2_ROUNDED, color=ACCENT_BLUE),
             ft.Column([
-                ft.Text(f"Room {room}", weight="bold", size=15, color=TEXT_DARK),
+                ft.Text(f"Unit {room}", weight="bold", size=15, color=TEXT_DARK),
                 ft.Text(f"{carrier} • {item['type']}", size=12, color=TEXT_MUTED, weight=ft.FontWeight.W_500),
             ], spacing=2, expand=True),
             ft.Text(item["time"], size=13, color=TEXT_MUTED, weight=ft.FontWeight.W_500),
@@ -230,5 +230,5 @@ def handle_mark_delivered(dash, room, carrier):
             parcel["status"] = "Delivered"
             break
     
-    dash.show_message(f"Room {room} picked up.")
+    dash.show_message(f"Unit {room} picked up.")
     apply_parcel_filters(dash)
