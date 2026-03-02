@@ -7,8 +7,8 @@ from login import login
 
 def main(page: ft.Page):
     page.title = "PAMS - Login"
-    page.window.width = 550
-    page.window.height = 700
+    page.window_width = 1400  
+    page.window_height = 900
     page.update()
     page.window.center()
     page.update()
@@ -40,30 +40,30 @@ def main(page: ft.Page):
         register_dashboard.register_main(page)
     
     def redirect_by_role(user_data):
-        role = user_data.get("role")
+        role = user_data.get("role_id")
         full_name = user_data.get("full_name", user_data.get("username"))
         page.controls.clear()
 
         # Điều hướng dựa trên 6 Roles
-        if role == "Administrator":
+        if role == 1:
             from ui.Administrator.admin_dashboard import AdminDashboard
-            page.add(AdminDashboard(page, full_name, role))
-        elif role == "Manager":
+            page.add(AdminDashboard(page, full_name, "Administrator"))
+        elif role == 2:
             from ui.Manager.mgr_dashboard import ManagerDashboard
-            page.add(ManagerDashboard(page, full_name, role))
-        elif role == "Tenant":
-            from ui.Tenant.tenant_dashboard import TenantDashboard
-            page.add(TenantDashboard(page, full_name, role))
-        elif role == "Front Desk Staff":
+            page.add(ManagerDashboard(page, full_name, "Manager"))
+        elif role == 3:
             from ui.FrontDesk.fd_dashboard import FrontDeskDashboard
-            page.add(FrontDeskDashboard(page, full_name, role))
-        elif role == "Finance Manager":
-            from ui.Finance.fm_dashboard import FinanceDashboard
-            page.add(FinanceDashboard(page, full_name, role))
-        elif role == "Maintenance Staff":
+            page.add(FrontDeskDashboard(page, full_name, "Front Desk Staff"))
+        elif role == 4:
             from ui.Maintenance.ms_dashboard import MaintenanceDashboard
-            page.add(MaintenanceDashboard(page, full_name, role))
-        
+            page.add(MaintenanceDashboard(page, full_name, "Maintenance Staff"))
+        elif role == 5:
+            from ui.Finance.fm_dashboard import FinanceDashboard
+            page.add(FinanceDashboard(page, full_name, "Finance Manager"))
+        elif role == 6:
+            from ui.Tenant.tenant_dashboard import TenantDashboard
+            page.add(TenantDashboard(page, full_name, "Tenant"))
+     
         page.update()
 
     # --- EXECUTED LOGIN LOGIC ---

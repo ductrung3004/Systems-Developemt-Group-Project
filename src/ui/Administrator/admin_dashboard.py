@@ -12,10 +12,10 @@ from datetime import datetime
 from logic.search import *
 from base_dashboard import *
 from settingsStaff import *
-from mgr_user import *
-from assets_leases import *
-from broadcast import *
-from operations import *
+from .mgr_user import *
+from .assets_leases import *
+from .broadcast import *
+from .operations import *
 
 class AdminDashboard(BaseDashboard):
     def __init__(self, page: ft.Page, username: str = "Admin_User", role_name: str = "Administrator"):
@@ -264,10 +264,10 @@ class AdminDashboard(BaseDashboard):
         ], spacing=15)
         
 # --- Test Script ---
-def main(page: ft.Page):
-    dashboard = AdminDashboard(page, "Sara", "Administrator")
-    page.add(dashboard)
-    dashboard.switch_page("Dashboard", "Welcome back to your overview", dashboard.show_dashboard)
+# def main(page: ft.Page):
+#     dashboard = AdminDashboard(page, "Sara", "Administrator")
+#     page.add(dashboard)
+#     dashboard.switch_page("Dashboard", "Welcome back to your overview", dashboard.show_dashboard)
 
-if __name__ == "__main__":
-    ft.run(main)
+# if __name__ == "__main__":
+#     ft.run(main)
