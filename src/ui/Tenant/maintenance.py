@@ -6,6 +6,7 @@ from datetime import datetime
 from base_dashboard import ACCENT_BLUE, ACCENT_BLUE_LIGHT, CARD_BG, TEXT_DARK, TEXT_MUTED, BaseDashboard
 from flet_charts import PieChart, PieChartSection
 from db import get_db_connection
+from backend.Maintance.maintenance_request import create_maintenance_request
 
 import flet as ft
 
@@ -57,12 +58,8 @@ def show_maintenance(dash, *args):
 
     dash.content_column.controls.clear()
 
-    if hasattr(dash, "backend"):
-        maintenance_records = dash.backend.get_maintenance_requests()
-    else:
-        maintenance_records = fetch_maintenance_requests()
-
-    maintenance_records = sorted(maintenance_records, key=lambda x: x.get("created_date") if isinstance(x, dict) else x[5], reverse=True)
+    maintenance_data = fetch_maintenance_requests()
+    maintenance_data.sort(key=lambda x: x[5], reverse=True)
 
     action_bar = ft.Container(
         padding=ft.padding.symmetric(vertical=10),
@@ -80,31 +77,20 @@ def show_maintenance(dash, *args):
     )
 
     rows = []
-    for m in maintenance_records:
-        if isinstance(m, dict):
-            m_id = m.get("id")
-            category = m.get("category", "General")
-            desc = m.get("description", "")
-            priority = m.get("priority", "Medium")
-            status = m.get("status", "Pending")
-            reported = m.get("created_date", "-")
-            completed = m.get("completed_date", "-") or "-"
-        else:
-            m_id, category, desc, priority, status, reported, completed = m
-
-        p_color = ft.Colors.RED_700 if priority == "High" else ft.Colors.ORANGE_700 if priority == "Medium" else ft.Colors.BLUE_GREY_400
-        s_color = ft.Colors.BLUE_700 if status == "In Progress" else ft.Colors.GREEN_700 if status == "Completed" else ft.Colors.GREY_600
+    for m in maintenance_data:
+        p_color = ft.Colors.RED_700 if m[3] == "High" else ft.Colors.ORANGE_700 if m[3] == "Medium" else ft.Colors.BLUE_GREY_400
+        s_color = ft.Colors.BLUE_700 if m[4] == "In Progress" else ft.Colors.GREEN_700 if m[4] == "Completed" else ft.Colors.GREY_600
 
         rows.append(
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(f"#{m_id}", weight="w500", color=TEXT_DARK)),
-                    ft.DataCell(ft.Text(category, weight="w500", color=TEXT_DARK)),
-                    ft.DataCell(ft.Container(content=ft.Text(desc, weight="w500", color=TEXT_DARK, overflow=ft.TextOverflow.ELLIPSIS), width=200)),
-                    ft.DataCell(ft.Text(priority, color=p_color, weight="bold")),
-                    ft.DataCell(ft.Container(content=ft.Text(status, color="white", size=10, weight="bold"), bgcolor=s_color, padding=ft.padding.symmetric(vertical=4, horizontal=10), border_radius=15)),
-                    ft.DataCell(ft.Text(reported, weight="w500", color=TEXT_DARK)),
-                    ft.DataCell(ft.Text(completed, weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(f"#{m[0]}", weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(m[1], weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Container(content=ft.Text(m[2], weight="w500", color=TEXT_DARK, overflow=ft.TextOverflow.ELLIPSIS), width=200)),
+                    ft.DataCell(ft.Text(m[3], color=p_color, weight="bold")),
+                    ft.DataCell(ft.Container(content=ft.Text(m[4], color="white", size=10, weight="bold"), bgcolor=s_color, padding=ft.padding.symmetric(vertical=4, horizontal=10), border_radius=15)),
+                    ft.DataCell(ft.Text(m[5], weight="w500", color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(m[6], weight="w500", color=TEXT_DARK)),
                 ]
             )
         )
@@ -168,10 +154,10 @@ def show_maintenance(dash, *args):
                 controls=[
                     ft.ListTile(
                         leading=ft.Icon(ft.Icons.BUILD_CIRCLE_ROUNDED, color=ACCENT_BLUE),
-                        title=ft.Text(f"Request #{m.get('id') if isinstance(m, dict) else m[0]}", weight="bold", color=TEXT_DARK),
-                        subtitle=ft.Text(f"{m.get('category') if isinstance(m, dict) else m[1]} - {m.get('created_date') if isinstance(m, dict) else m[5]}"),
+                        title=ft.Text(f"Request #{m[0]}", weight="bold", color=TEXT_DARK),
+                        subtitle=ft.Text(f"{m[1]} - {m[5]}"),
                     )
-                    for m in maintenance_records[:5]
+                    for m in maintenance_data[:5]
                 ]
             )
         ])
@@ -210,12 +196,11 @@ def open_maintenance_form(dash):
             return
 
         try:
-            if hasattr(dash, "backend"):
-                success, msg = dash.backend.create_maintenance_request(ref_category.value, ref_desc.value, ref_priority.value)
-                if not success:
-                    raise Exception(msg)
-            else:
-                raise Exception("No backend available for creating maintenance request")
+            create_maintenance_request(
+                tenant_id=2,
+                apartment_id=1,
+                description=ref_desc.value
+            )
 
             dash.show_message("Success! Request submitted successfully!")
             dash.close_dialog()
