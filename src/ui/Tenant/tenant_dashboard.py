@@ -8,7 +8,7 @@ from .payments import *
 from .maintenance import *
 from .settings import *
 from .notifications import *
-from backend.tenant import TenantBackend
+from backend.Tenant.tenant import TenantBackend
 from flet_charts import PieChart, PieChartSection
 import flet as ft
 

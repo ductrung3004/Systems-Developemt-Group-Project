@@ -77,7 +77,7 @@ class AdminDashboard(BaseDashboard):
                     icon_color=TEXT_MUTED,
                     on_click=lambda _: self.switch_page(
                         "Manage User",
-                        "Manage Staff & Residents", self.show_user
+                        "Manage Staff & Residents", show_user
                     )
                 )
             ], spacing=15)

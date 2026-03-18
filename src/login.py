@@ -1,5 +1,5 @@
 from db import get_db_connection
-import bcrypt
+from pwhash import verify_password
 
 def login(username, password):
     conn = None
@@ -20,7 +20,7 @@ def login(username, password):
         if not user:
             return "Invalid"
 
-        if bcrypt.checkpw(pass_val.encode('utf-8'), user['password_hash'].encode('utf-8')):
+        if verify_password(pass_val, user['password_hash']):
             return user
         else:
             return "Invalid"
