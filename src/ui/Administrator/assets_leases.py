@@ -396,6 +396,3 @@ def register_lease(dash, *args):
 
 
 
-
-
-
