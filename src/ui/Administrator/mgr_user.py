@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import flet as ft
 from base_dashboard import *
 from logic.search import *
-import db # IMPORTANT: Imports your database file
+import db # Connects to your database
 
 def show_user(dash, tab_index=0, *args):
     dash.content_column.controls.clear()
@@ -15,7 +15,7 @@ def show_user(dash, tab_index=0, *args):
     def get_staff_view():
         search_val = getattr(dash, "staff_search", ft.TextField()).value or ""
         
-        # 1. FETCH REAL DATA FROM MYSQL
+        # Fetch from database
         staff_data = db.get_all_staff()
         
         current_rows = []
@@ -36,7 +36,6 @@ def show_user(dash, tab_index=0, *args):
                         ),
                         ft.DataCell(
                             ft.Row([
-                                # 2. ATTACH EDIT AND DELETE FUNCTIONS TO BUTTONS
                                 ft.IconButton(
                                     ft.Icons.EDIT, icon_size=18, icon_color=TEXT_DARK,
                                     on_click=lambda e, s=staff: edit_staff(dash, s)
@@ -87,25 +86,37 @@ def show_user(dash, tab_index=0, *args):
     # TAB 2: RESIDENTS APPROVALS
     def get_resident_view():
         search_val = getattr(dash, "res_search", ft.TextField()).value or ""
-        residents = [{"name": "Alice Smith", "unit": "A-101", "type": "Tenant", "date": "2026-02-22"}]
+        
+        # Fetch pending residents from database
+        pending_residents = db.get_pending_residents()
+        
         rows = []
-        for r in residents:
-            if search_val.lower() in r["name"].lower() or search_val.lower() in r["unit"].lower():
+        for r in pending_residents:
+            if search_val.lower() in r["name"].lower():
+                # Clean up the date display
+                req_date = str(r["created_at"]).split()[0] if r.get("created_at") else "Unknown"
+                
                 rows.append(
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(r["name"], color=TEXT_DARK)),
-                        ft.DataCell(ft.Text(r["unit"], color=TEXT_DARK)),
-                        ft.DataCell(ft.Text(r["type"], color=TEXT_DARK)),
-                        ft.DataCell(ft.Text(r["date"], color=TEXT_DARK)),
+                        ft.DataCell(ft.Text("Unassigned", color=TEXT_DARK, italic=True)), 
+                        ft.DataCell(ft.Text("Tenant", color=TEXT_DARK)),
+                        ft.DataCell(ft.Text(req_date, color=TEXT_DARK)),
                         ft.DataCell(ft.Row([
-                            ft.IconButton(ft.Icons.CHECK, icon_color="green"),
-                            ft.IconButton(ft.Icons.CLOSE, icon_color="red")
+                            ft.IconButton(
+                                ft.Icons.CHECK, icon_color="green", tooltip="Approve",
+                                on_click=lambda e, uid=r["user_id"]: handle_approve(dash, uid)
+                            ),
+                            ft.IconButton(
+                                ft.Icons.CLOSE, icon_color="red", tooltip="Reject",
+                                on_click=lambda e, uid=r["user_id"]: handle_reject(dash, uid)
+                            )
                         ])),
                     ])
                 )
 
         dash.res_search = ft.TextField(
-            label="Search Residents (Name/Unit)...", prefix_icon=ft.Icons.SEARCH, value=search_val,
+            label="Search Residents (Name)...", prefix_icon=ft.Icons.SEARCH, value=search_val,
             expand=True, color=TEXT_DARK, border_color=ACCENT_BLUE,
             on_submit=lambda _: show_user(dash, tab_index=1)
         )
@@ -184,13 +195,12 @@ def show_user(dash, tab_index=0, *args):
     dash.content_column.controls.append(tabs)
     dash.page.update()
 
-# --- DATABASE ACTION: DELETE ---
+# --- DATABASE ACTIONS: STAFF ---
 def delete_staff_record(dash, ni):
     db.delete_staff(ni)
     dash.show_message(f"Staff record {ni} deleted.")
     show_user(dash, tab_index=0) 
 
-# --- DATABASE ACTION: EDIT ---
 def edit_staff(dash, staff):
     name_input = ft.TextField(label="Full Name", value=staff["name"], border_color=ACCENT_BLUE)
     role_input = ft.Dropdown(
@@ -263,7 +273,6 @@ def register_staff(dash, *args):
             dash.show_message("Please fill in all required fields!")
             return
 
-        # 3. THIS NOW SAVES TO MYSQL
         success = db.add_staff(ni_input.value.upper(), name_input.value, role_input.value)
         
         if success:
@@ -292,3 +301,14 @@ def register_staff(dash, *args):
     ]
 
     dash.show_custom_modal("New Staff Registration", content, actions)
+
+# --- DATABASE ACTIONS: RESIDENTS ---
+def handle_approve(dash, user_id):
+    db.approve_resident(user_id)
+    dash.show_message("Resident approved successfully!")
+    show_user(dash, tab_index=1)
+
+def handle_reject(dash, user_id):
+    db.reject_resident(user_id)
+    dash.show_message("Resident request rejected and deleted.")
+    show_user(dash, tab_index=1)

@@ -20,12 +20,15 @@ def register_user(username, password, first_name, last_name, email, role_name="T
         # Hash password and store it as UTF-8 string
         hashed_pw = hash_password(password)
 
-        # Insert user
+        # NEW: Automatically set Tenants to Inactive so they hit the approval queue
+        start_status = "Inactive" if role_name == "Tenant" else "Active"
+
+        # UPDATED: Insert user with the new account_status included
         cursor.execute("""
             INSERT INTO users
-            (role_id, username, password_hash, first_name, last_name, email)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (role_id, username, hashed_pw, first_name, last_name, email))
+            (role_id, username, password_hash, first_name, last_name, email, account_status)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (role_id, username, hashed_pw, first_name, last_name, email, start_status))
 
         conn.commit()
         return "Success"
