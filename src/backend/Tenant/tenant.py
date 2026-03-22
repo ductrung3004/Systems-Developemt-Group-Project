@@ -352,4 +352,3 @@ class TenantBackend:
             return True, "Complaint submitted"
         except Exception as err:
             return False, str(err)
-

@@ -1,3 +1,5 @@
+# Elena Ho - 25044389
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -12,7 +14,7 @@ def draw_my_profile_tab(dash, *args):
     
     # Section 1: Personal Information
     ref_nickname = ft.TextField(
-        label="Nickname", value=profile.get("nickname", profile.get("occupation", "Tenant")), expand=True,
+        label="Nickname", value=profile.get("nickname", profile.get("occupation", "")), expand=True,
         border_color=ACCENT_BLUE, text_style=ft.TextStyle(color=TEXT_DARK)
     )
     ref_dob = ft.TextField(
@@ -356,7 +358,7 @@ def draw_support_tab(dash):
             ft.Divider(),
             ft.ListTile(
                 leading=ft.Icon(ft.Icons.PHONE_ROUNDED, color=ACCENT_BLUE),
-                title=ft.Text("Phone: +84 123 456 789", weight="bold", color=TEXT_DARK),
+                title=ft.Text("Phone: +44 123 456 789", weight="bold", color=TEXT_DARK),
             ),
             ft.ListTile(
                 leading=ft.Icon(ft.Icons.EMAIL_ROUNDED, color=ACCENT_BLUE),
