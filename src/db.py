@@ -1,11 +1,25 @@
+import os
+from pathlib import Path
+
 import mysql.connector
+from dotenv import load_dotenv
+
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+
+def _get_required_env(name: str) -> str:
+    value = os.getenv(name)
+    if value:
+        return value
+    raise RuntimeError(f"Missing required environment variable: {name}")
 
 def get_db_connection():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",         # Database Username
-        password="asdf1234", # Database password
-        database="paragon_db"
+        host=os.getenv("DB_HOST", "localhost"),
+        user=os.getenv("DB_USER", "root"),
+        password=_get_required_env("DB_PASSWORD"),
+        database=os.getenv("DB_NAME", "paragon_db")
     )
 
 # ==========================================
@@ -352,3 +366,41 @@ def add_security_log(event_description, severity_color="blue"):
         print(f"DATABASE ERROR (Add Log): {e}")
     finally:
         conn.close()
+
+
+def get_manager_city_analytics():
+    """Fetches live occupancy and invoice analytics grouped by city."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    query = """
+        SELECT
+            l.city,
+            COALESCE(unit_stats.total_units, 0) AS total_units,
+            COALESCE(unit_stats.occupied_units, 0) AS occupied_units,
+            COALESCE(financials.collected_revenue, 0) AS collected_revenue,
+            COALESCE(financials.pending_revenue, 0) AS pending_revenue
+        FROM locations l
+        LEFT JOIN (
+            SELECT
+                a.location_id,
+                COUNT(*) AS total_units,
+                SUM(CASE WHEN a.status = 'Occupied' THEN 1 ELSE 0 END) AS occupied_units
+            FROM apartments a
+            GROUP BY a.location_id
+        ) AS unit_stats ON unit_stats.location_id = l.location_id
+        LEFT JOIN (
+            SELECT
+                a.location_id,
+                SUM(CASE WHEN i.status = 'Paid' THEN i.amount ELSE 0 END) AS collected_revenue,
+                SUM(CASE WHEN i.status IN ('Unpaid', 'Late') THEN i.amount ELSE 0 END) AS pending_revenue
+            FROM apartments a
+            LEFT JOIN lease_agreements la ON la.apartment_id = a.apartment_id
+            LEFT JOIN invoices i ON i.lease_id = la.lease_id
+            GROUP BY a.location_id
+        ) AS financials ON financials.location_id = l.location_id
+        ORDER BY l.city
+    """
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows

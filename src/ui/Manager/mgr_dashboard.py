@@ -10,9 +10,49 @@ from flet_charts import BarChart, BarChartGroup, BarChartRod, ChartAxis, ChartAx
 from datetime import datetime
 from base_dashboard import *
 from settingsStaff import *
-from occupancy import *
-from fn_reports import *
-from expansion import *
+import db
+from .occupancy import *
+from .fn_reports import *
+from .expansion import *
+
+
+TARGET_CITIES = ["London", "Manchester", "Bristol", "Cardiff"]
+
+
+def _load_city_analytics():
+    analytics_by_city = {city: {
+        "city": city,
+        "revenue": 0.0,
+        "pending": 0.0,
+        "occupancy_rate": 0.0,
+        "occupied_units": 0,
+        "total_units": 0,
+    } for city in TARGET_CITIES}
+
+    try:
+        rows = db.get_manager_city_analytics()
+    except Exception:
+        return list(analytics_by_city.values())
+
+    for row in rows:
+        city = row.get("city")
+        if city not in analytics_by_city:
+            continue
+
+        total_units = int(row.get("total_units") or 0)
+        occupied_units = int(row.get("occupied_units") or 0)
+        occupancy_rate = round((occupied_units / total_units) * 100, 1) if total_units else 0.0
+
+        analytics_by_city[city] = {
+            "city": city,
+            "revenue": float(row.get("collected_revenue") or 0),
+            "pending": float(row.get("pending_revenue") or 0),
+            "occupancy_rate": occupancy_rate,
+            "occupied_units": occupied_units,
+            "total_units": total_units,
+        }
+
+    return [analytics_by_city[city] for city in TARGET_CITIES]
 
 class ManagerDashboard(BaseDashboard):
     def __init__(self, page: ft.Page, username: str, role_name: str = "Manager"):
@@ -38,6 +78,13 @@ class ManagerDashboard(BaseDashboard):
     
     def show_overview(self, *args):
         self.content_column.controls.clear()
+        city_analytics = _load_city_analytics()
+
+        total_units = sum(item["total_units"] for item in city_analytics)
+        occupied_units = sum(item["occupied_units"] for item in city_analytics)
+        group_occupancy = f"{((occupied_units / total_units) * 100):.1f}%" if total_units else "0.0%"
+        total_revenue = sum(item["revenue"] for item in city_analytics)
+        total_pending = sum(item["pending"] for item in city_analytics)
         
         header = ft.Row([
         ft.Column([
@@ -54,9 +101,9 @@ class ManagerDashboard(BaseDashboard):
     ], alignment="spaceBetween")
         
         kpi_row = ft.Row([
-            self.create_stat_card("Group Occupancy", "88.2%", ft.Icons.HOUSE_ROUNDED, highlight=True),
-            self.create_stat_card("Total Revenue", "£1,420,500", ft.Icons.MONETIZATION_ON_ROUNDED),
-            self.create_stat_card("Operating Costs", "£52,400", ft.Icons.PAYMENT_ROUNDED),
+            self.create_stat_card("Group Occupancy", group_occupancy, ft.Icons.HOUSE_ROUNDED, highlight=True),
+            self.create_stat_card("Collected Revenue", f"£{total_revenue:,.0f}", ft.Icons.MONETIZATION_ON_ROUNDED),
+            self.create_stat_card("Pending Revenue", f"£{total_pending:,.0f}", ft.Icons.PAYMENT_ROUNDED),
         ], spacing=20)
         
         self.city_chart_container = ft.Container(
@@ -93,28 +140,19 @@ class ManagerDashboard(BaseDashboard):
             ft.Divider(height=15, color="transparent"),
             self.city_table_container
         ])
-        render_manager_data(self)
+        render_manager_data(self, city_analytics)
         self.page.update()
         
-def render_manager_data(self):
+def render_manager_data(self, regional_data=None):
     """
     Logic to populate multi-city analytics.
     Focuses on Bristol, Cardiff, London, and Manchester.
     """
-    # 1. MOCK DATA: Performance by City
-    # Requirements: Financial summaries comparing collected vs pending
-    regional_data = [
-        {"city": "London", "revenue": 450, "expenses": 120, "occupancy": "94%"},
-        {"city": "Manchester", "revenue": 320, "expenses": 95, "occupancy": "88%"},
-        {"city": "Bristol", "revenue": 210, "expenses": 65, "occupancy": "82%"},
-        {"city": "Cardiff", "revenue": 185, "expenses": 55, "occupancy": "79%"},
-    ]
+    regional_data = regional_data or _load_city_analytics()
 
-    # 2. GENERATE BAR CHART (City Comparison)
-    # Requirement: Generate performance reports according to location
     all_values = []
     for item in regional_data:
-        all_values.extend([item.get("revenue", 0), item.get("expenses", 0)])
+        all_values.extend([item.get("revenue", 0), item.get("pending", 0)])
     
     max_val_k = max(all_values) * 1.1 if all_values else 100
     
@@ -136,7 +174,7 @@ def render_manager_data(self):
                 x=i,
                 rods=[
                     BarChartRod(from_y=0, to_y=item["revenue"], color=ACCENT_BLUE, width=20, border_radius=4),
-                    BarChartRod(from_y=0, to_y=item["expenses"], color=ft.Colors.ORANGE_500, width=20, border_radius=4),
+                    BarChartRod(from_y=0, to_y=item["pending"], color=ft.Colors.ORANGE_500, width=20, border_radius=4),
                 ]
             )
         )
@@ -150,7 +188,7 @@ def render_manager_data(self):
             ], spacing=8),
             ft.Row([
                 ft.Container(width=12, height=12, bgcolor=ft.Colors.ORANGE_500, border_radius=3),
-                ft.Text("Maint. Expenses (£k)", size=12, color=ft.Colors.ORANGE_500, weight=ft.FontWeight.W_500)
+                ft.Text("Pending Revenue (£)", size=12, color=ft.Colors.ORANGE_500, weight=ft.FontWeight.W_500)
             ], spacing=8),
         ], alignment=ft.MainAxisAlignment.END, spacing=25),
         BarChart(
@@ -173,24 +211,22 @@ def render_manager_data(self):
         )
     ], spacing=10, expand=True)
 
-    # 3. GENERATE REGIONAL TABLE
-    # Requirement: Insight into occupancy and financial performance
     rows = []
     for item in regional_data:
         rows.append(
             ft.DataRow(cells=[
                 ft.DataCell(ft.Text(item["city"], weight="bold", color=ft.Colors.BLUE_900)),
-                ft.DataCell(ft.Text(f"£{item['revenue']}k", color=ACCENT_BLUE)),
-                ft.DataCell(ft.Text(f"£{item['expenses']}k", color=ft.Colors.RED_400)),
+                ft.DataCell(ft.Text(f"£{item['revenue']:,.2f}", color=ACCENT_BLUE)),
+                ft.DataCell(ft.Text(f"£{item['pending']:,.2f}", color=ft.Colors.RED_400)),
                 ft.DataCell(
                     ft.Container(
-                        content=ft.Text(item["occupancy"], color="white", size=11, weight="bold"),
-                        bgcolor=ft.Colors.GREEN_700 if int(item["occupancy"].strip('%')) > 85 else ft.Colors.BLUE_600,
+                        content=ft.Text(f"{item['occupancy_rate']:.1f}%", color="white", size=11, weight="bold"),
+                        bgcolor=ft.Colors.GREEN_700 if item["occupancy_rate"] > 85 else ft.Colors.BLUE_600,
                         padding=ft.Padding.symmetric(horizontal=10, vertical=4),
                         border_radius=15
                     )
                 ),
-                ft.DataCell(ft.IconButton(ft.Icons.ANALYTICS_OUTLINED, icon_color=ACCENT_BLUE)),
+                ft.DataCell(ft.Text(f"{item['occupied_units']}/{item['total_units']}", color=TEXT_DARK, weight="bold")),
             ])
         )
 
@@ -199,10 +235,10 @@ def render_manager_data(self):
             heading_row_color=ft.Colors.BLUE_GREY_50,
             columns=[
                 ft.DataColumn(ft.Text("Branch Location", weight="bold", color=TEXT_DARK)),
-                ft.DataColumn(ft.Text("Total Revenue", weight="bold", color=TEXT_DARK)),
-                ft.DataColumn(ft.Text("Maint. Costs", weight="bold", color=TEXT_DARK)),
+                ft.DataColumn(ft.Text("Collected Revenue", weight="bold", color=TEXT_DARK)),
+                ft.DataColumn(ft.Text("Pending Revenue", weight="bold", color=TEXT_DARK)),
                 ft.DataColumn(ft.Text("Occupancy Rate", weight="bold", color=TEXT_DARK)),
-                ft.DataColumn(ft.Text("Details", weight="bold", color=TEXT_DARK)),
+                ft.DataColumn(ft.Text("Occupied Units", weight="bold", color=TEXT_DARK)),
             ],
             rows=rows
         )

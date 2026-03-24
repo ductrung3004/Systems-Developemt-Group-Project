@@ -23,6 +23,8 @@ class BaseDashboard(ft.Container):
         super().__init__()
         # keep a reference to the hosting Page so methods can call page.update()
         self._page = page
+        self._is_mounted = False
+        self._pending_page_switch = None
         try:
             page.window.width = 1400
             page.window.height = 900
@@ -163,9 +165,24 @@ class BaseDashboard(ft.Container):
         self.nav_container.controls.append(btn)
         return btn
 
+    def did_mount(self):
+        self._is_mounted = True
+
+        if self._pending_page_switch is None:
+            return
+
+        title, subtitle, page_content_func = self._pending_page_switch
+        self._pending_page_switch = None
+        self.switch_page(title, subtitle, page_content_func)
+
     def switch_page(self, title, subtitle, page_content_func):
         self.header_title.value = title
         self.header_subtitle.value = subtitle
+
+        if not self._is_mounted:
+            self._pending_page_switch = (title, subtitle, page_content_func)
+            return
+
         self.content_column.controls.clear()
         try:
             page_content_func(self)

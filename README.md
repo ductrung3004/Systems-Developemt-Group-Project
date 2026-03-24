@@ -1,5 +1,22 @@
 # SdgpProject app
 
+## Environment setup
+
+Create a local .env file in the project root before running the app:
+
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=your_password_here
+DB_NAME=paragon_db
+```
+
+The project ignores local .env files, so they will not be pushed to GitHub. If a secret file was already committed before being ignored, remove it from git tracking once with:
+
+```bash
+git rm --cached .env
+```
+
 ## Run the app
 
 ### uv

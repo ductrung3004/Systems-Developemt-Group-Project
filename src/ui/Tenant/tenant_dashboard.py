@@ -226,8 +226,8 @@ class TenantDashboard(BaseDashboard):
         )
 
         self.content_column.controls = [header_container, content_card]
-        if self.page:
-            self.page.update()
+        if getattr(self, "_is_mounted", False):
+            self._page.update()
 
 # #Test case
 # def main(page: ft.Page):
