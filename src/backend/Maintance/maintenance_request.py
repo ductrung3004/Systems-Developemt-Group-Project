@@ -39,4 +39,3 @@ def create_maintenance_request(tenant_id, apartment_id, description):
             cursor.close()
         if conn:
             conn.close()
-

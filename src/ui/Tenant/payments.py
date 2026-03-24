@@ -1,3 +1,5 @@
+# Elena Ho - 25044389
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -30,6 +32,8 @@ def show_payments(dash, *args):
     last_paid = next((t for t in transactions if t.get("status") == "Paid"), None)
     last_paid_label = f"£{last_paid['amount']:,.2f} ({last_paid['date']})" if last_paid else "£0.00"
 
+    # 1. Balance Overview (Cards)
+
     balance_cards = ft.Row(
         spacing=20,
         controls=[
@@ -39,6 +43,9 @@ def show_payments(dash, *args):
         ]
     )
 
+    # 2. Invoice Rows & Transaction History
+    # Invoice Rows
+
     invoice_rows = []
     for inv in sorted(invoices, key=lambda x: x.get("invoice_id", 0)):
         status = inv.get("status", "Unpaid")
@@ -47,9 +54,9 @@ def show_payments(dash, *args):
             ft.DataRow(
                 cells=[
                     ft.DataCell(ft.Text(str(inv.get("invoice_id", "")), weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(str(inv.get("issue_date", "")), weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(str(inv.get("due_date", "")), weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(f"£{inv.get('amount', 0):,.2f}", weight=ft.FontWeight.W_500)),
+                    ft.DataCell(ft.Text(str(inv.get("issue_date", "")), weight=ft.FontWeight.W_500, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(str(inv.get("due_date", "")), weight=ft.FontWeight.W_500, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(f"£{inv.get('amount', 0):,.2f}", weight=ft.FontWeight.W_500, color=TEXT_DARK)),
                     ft.DataCell(ft.Container(content=ft.Text(status, color="white", size=10, weight="bold"), bgcolor=color, padding=ft.padding.symmetric(vertical=4, horizontal=10), border_radius=15)),
                 ]
             )
@@ -81,14 +88,14 @@ def show_payments(dash, *args):
         payment_rows.append(
             ft.DataRow(
                 cells=[
-                    ft.DataCell(ft.Text(t.get("date", ""), weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(t.get("description", ""), weight=ft.FontWeight.W_500)),
-                    ft.DataCell(ft.Text(f"£{t.get('amount', 0):,.2f}", weight=ft.FontWeight.BOLD)),
-                    ft.DataCell(ft.Text(t.get("status", ""), weight=ft.FontWeight.W_500)),
+                    ft.DataCell(ft.Text(t.get("date", ""), weight=ft.FontWeight.W_500, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(t.get("description", ""), weight=ft.FontWeight.W_500, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(f"£{t.get('amount', 0):,.2f}", weight=ft.FontWeight.BOLD, color=TEXT_DARK)),
+                    ft.DataCell(ft.Text(t.get("status", ""), weight=ft.FontWeight.W_500, color=TEXT_DARK)),
                 ]
             )
         )
-
+        
     history_table = ft.Container(
         bgcolor=CARD_BG,
         padding=25,
@@ -109,6 +116,7 @@ def show_payments(dash, *args):
         ], scroll=ft.ScrollMode.AUTO)
     )
 
+    # 3. Pay Action
     action_card = ft.Container(
         bgcolor=CARD_BG,
         padding=20,
@@ -123,12 +131,24 @@ def show_payments(dash, *args):
         ], horizontal_alignment="center")
     )
 
+    left_column = ft.Column(
+        [invoice_table, history_table],
+        expand=True,
+        spacing=25,
+        scroll=ft.ScrollMode.AUTO
+    )
+    
+    main_row = ft.Row(
+        [left_column, action_card],
+        expand=True,
+        alignment="start",
+        vertical_alignment="start",
+        spacing=20
+    )
+    
     dash.content_column.controls = [
         balance_cards,
-        ft.Row([
-            ft.Column([invoice_table, history_table], expand=True),
-            action_card
-        ], spacing=20, expand=True),
+        main_row,
     ]
     dash.page.update()
 
