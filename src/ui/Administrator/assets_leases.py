@@ -195,7 +195,8 @@ def register_apartment(dash, *args):
     content = ft.Column([
         ft.Text("Register a new apartment to the building."),
         unit_input,
-        ft.Row([bed_input, bath_input]),
+        bed_input,
+        bath_input,
         rent_input,
         ft.Text("Note: Default status will be set to 'Available'.", size=11, italic=True)
     ], tight=True, spacing=15, width=400)
@@ -221,10 +222,10 @@ def register_lease(dash, *args):
             return
 
         success = db.add_lease(
-            int(tenant_id_input.value), 
-            int(apt_id_input.value), 
-            start_input.value, 
-            end_input.value, 
+            int(tenant_id_input.value),
+            int(apt_id_input.value),
+            start_input.value,
+            end_input.value,
             float(rent_input.value)
         )
         
@@ -236,11 +237,12 @@ def register_lease(dash, *args):
             dash.show_message("Error: Check if Tenant ID and Apartment ID are valid.")
 
     content = ft.Column([
-        ft.Text("Create a new lease agreement.", color=TEXT_DARK, weight="bold"),
+        ft.Text("Create a new lease agreement.", ),
         tenant_id_input,
         apt_id_input,
         rent_input,
-        ft.Row([start_input, end_input], spacing=10)
+        start_input,
+        end_input,
     ], tight=True, spacing=15, width=400)
 
     actions = [
