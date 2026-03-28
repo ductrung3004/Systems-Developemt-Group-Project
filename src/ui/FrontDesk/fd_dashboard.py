@@ -4,16 +4,11 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_path = os.path.abspath(os.path.join(current_dir, "../../"))
-if src_path not in sys.path:
-    sys.path.append(src_path)
-
 from logic.notifications import *
 from base_dashboard import *
-from residents import *
-from work_orders import *
-from parcel_mgr import *
+from .residents import *
+from .work_orders import *
+from .parcel_mgr import *
 from settingsStaff import *
 
 import flet as ft

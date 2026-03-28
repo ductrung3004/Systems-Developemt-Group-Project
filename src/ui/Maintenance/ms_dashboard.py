@@ -6,7 +6,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from base_dashboard import *
-from work_orders import *
+from .work_orders import *
 from settingsStaff import *
 import flet as ft
 

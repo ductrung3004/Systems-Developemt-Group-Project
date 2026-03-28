@@ -199,20 +199,6 @@ class BaseDashboard(ft.Container):
             # 2. Clear current dashboard interface
             self._page.controls.clear()
             
-            try:
-                self._page.window.width = 450
-                self._page.window.height = 650
-                self._page.window.resizable = False
-                self._page.window.center()
-            except Exception:
-                self._page.window_width = 450
-                self._page.window_height = 650
-                self._page.window_resizable = False
-                try:
-                    self._page.window.center()
-                except Exception:
-                    self._page.window_center = True
-            
             import login_dashboard
             login_dashboard.main(self._page)
             

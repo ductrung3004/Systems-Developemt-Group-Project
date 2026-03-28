@@ -10,9 +10,9 @@ from flet_charts import LineChart, LineChartData, LineChartDataPoint, ChartAxis,
 from datetime import datetime
 from base_dashboard import *
 from settingsStaff import *
-from invoices import *
-from transactions import *
-from reports import *
+from .invoices import *
+from .transactions import *
+from .reports import *
 
 class FinanceDashboard(BaseDashboard):
     def __init__(self, page: ft.Page, username: str, role_name: str = "Finance Manager"):

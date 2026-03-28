@@ -7,7 +7,7 @@ from login import login
 
 def main(page: ft.Page):
     page.title = "PAMS - Login"
-    page.window_width = 1400  
+    page.window_width = 1400
     page.window_height = 900
     page.update()
     

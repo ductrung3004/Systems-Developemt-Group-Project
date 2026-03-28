@@ -99,7 +99,7 @@ def show_user(dash, tab_index=0, *args):
                 rows.append(
                     ft.DataRow(cells=[
                         ft.DataCell(ft.Text(r["name"], color=TEXT_DARK)),
-                        ft.DataCell(ft.Text("Unassigned", color=TEXT_DARK, italic=True)), 
+                        ft.DataCell(ft.Text("Unassigned", color=TEXT_DARK, italic=True)),
                         ft.DataCell(ft.Text("Tenant", color=TEXT_DARK)),
                         ft.DataCell(ft.Text(req_date, color=TEXT_DARK)),
                         ft.DataCell(ft.Row([

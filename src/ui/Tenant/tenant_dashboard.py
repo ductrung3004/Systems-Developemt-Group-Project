@@ -99,13 +99,13 @@ class TenantDashboard(BaseDashboard):
                             # Example announcements (replace with dynamic content later)
                             ft.ListTile(
                                 leading=ft.Icon(ft.Icons.INFO_OUTLINE, color=ACCENT_BLUE),
-                                title=ft.Text("Hệ thống bảo trì điện", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
-                                subtitle=ft.Text("Vào chủ nhật tuần này, từ 8:00 đến 12:00.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
+                                title=ft.Text("Maintenance", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
+                                subtitle=ft.Text("On this Sunday, from 8:00 to 12:00.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
                             ),
                             ft.ListTile(
                                 leading=ft.Icon(ft.Icons.CAMPAIGN_OUTLINED, color=ACCENT_BLUE),
-                                title=ft.Text("Thu gom rác", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
-                                subtitle=ft.Text("Vui lòng để rác đúng nơi quy định trước 7:00 sáng.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
+                                title=ft.Text("Garbage Collection", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
+                                subtitle=ft.Text("Please place garbage in the designated area before 7:00 AM.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
                             ),
                         ]
                     )
