@@ -1,17 +1,17 @@
 /*
- Navicat Premium Dump SQL
+Navicat Premium Dump SQL
 
- Source Server         : Local MySQL
- Source Server Type    : MySQL
- Source Server Version : 90001 (9.0.1)
- Source Host           : localhost:3306
- Source Schema         : paragon_db
+Source Server         : Local MySQL
+Source Server Type    : MySQL
+Source Server Version : 90001 (9.0.1)
+Source Host           : localhost:3306
+Source Schema         : paragon_db
 
- Target Server Type    : MySQL
- Target Server Version : 90001 (9.0.1)
- File Encoding         : 65001
+Target Server Type    : MySQL
+Target Server Version : 90001 (9.0.1)
+File Encoding         : 65001
 
- Date: 18/03/2026 19:18:57
+Date: 18/03/2026 19:18:57
 */
 
 SET NAMES utf8mb4;
@@ -37,6 +37,37 @@ CREATE TABLE `administrators` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `administrators` (`admin_id`, `user_id`, `location_id`) VALUES (4, 36, 1);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for broadcasts
+-- ----------------------------
+DROP TABLE IF EXISTS broadcasts;
+CREATE TABLE broadcasts (
+    broadcast_id INT NOT NULL AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    target_audience VARCHAR(50) NOT NULL DEFAULT 'All', -- All / All Staff / All Residents
+    urgency ENUM('Info','Urgent') DEFAULT 'Low',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (broadcast_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+DROP TABLE IF EXISTS broadcast_targets;
+
+BEGIN;
+-- Send All
+INSERT INTO broadcasts (title, content, target_audience, urgency)
+VALUES ('System Maintenance', 'The system will be down from 10 PM to 12 AM', 'All', 'Info');
+
+-- Send All Staffs
+INSERT INTO broadcasts (title, content, target_audience, urgency)
+VALUES ('Staff Meeting', 'Please join the staff meeting at 3 PM', 'All Staff', 'Urgent');
+
+-- Send tenants
+INSERT INTO broadcasts (title, content, target_audience, urgency)
+VALUES ('Rent Reminder', 'Please pay your rent before the 5th of each month', 'All Residents', 'Info');
+
 COMMIT;
 
 -- ----------------------------
@@ -470,7 +501,7 @@ INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_n
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (39, 4, 'maint1', 'hash_maint', 'Bob', 'Taylor', 'maint@email.com', '0700000004', 'Active', '2026-03-17 00:10:28', NULL, NULL);
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (40, 5, 'finance1', 'hash_finance', 'Sarah', 'White', 'finance@email.com', '0700000005', 'Active', '2026-03-17 00:10:28', NULL, NULL);
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (41, 6, 'tenant1', 'hash_tenant', 'David', 'Green', 'tenant@email.com', '0700000006', 'Active', '2026-03-17 00:10:28', NULL, NULL);
-INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (42, 6, 'tenant2', 'hash_tenant', 'Emma', 'Clark', 'tenant2@email.com', '0700000007', 'Active', '2026-03-17 00:10:28', NULL, NULL);
+
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

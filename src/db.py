@@ -5,9 +5,7 @@ import mysql.connector
 from dotenv import load_dotenv
 from pwhash import hash_password
 
-
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
-
 
 ROLE_LABEL_TO_DB = {
     "Administrator": "Administrator",
@@ -20,13 +18,11 @@ ROLE_LABEL_TO_DB = {
 ROLE_DB_TO_LABEL = {value: key for key, value in ROLE_LABEL_TO_DB.items()}
 DEFAULT_STAFF_LOCATION_ID = int(os.getenv("DEFAULT_STAFF_LOCATION_ID", "1"))
 
-
 def _get_required_env(name: str) -> str:
     value = os.getenv(name)
     if value:
         return value
     raise RuntimeError(f"Missing required environment variable: {name}")
-
 
 def _normalize_staff_role(role: str) -> str:
     normalized_role = ROLE_LABEL_TO_DB.get(role, role)
@@ -34,10 +30,8 @@ def _normalize_staff_role(role: str) -> str:
         raise ValueError(f"Unsupported staff role: {role}")
     return normalized_role
 
-
 def _format_staff_role(role_name: str) -> str:
     return ROLE_DB_TO_LABEL.get(role_name, role_name)
-
 
 def _split_full_name(full_name: str) -> tuple[str, str]:
     parts = full_name.strip().split()
@@ -47,18 +41,14 @@ def _split_full_name(full_name: str) -> tuple[str, str]:
         return parts[0], "Staff"
     return parts[0], " ".join(parts[1:])
 
-
 def _build_staff_username(ni: str) -> str:
     return "".join(character for character in ni.lower().strip() if character.isalnum())
-
 
 def _generate_staff_email(username: str) -> str:
     return f"{username}@staff.local"
 
-
 def _generate_staff_password(ni: str) -> str:
     return f"Paragon@{ni[-4:]}"
-
 
 def _remove_staff_assignment(cursor, user_id: int):
     cursor.execute("DELETE FROM administrators WHERE user_id = %s", (user_id,))
@@ -66,7 +56,6 @@ def _remove_staff_assignment(cursor, user_id: int):
     cursor.execute("DELETE FROM frontdesk_staff WHERE user_id = %s", (user_id,))
     cursor.execute("DELETE FROM maintenance_staff WHERE user_id = %s", (user_id,))
     cursor.execute("DELETE FROM financial_managers WHERE user_id = %s", (user_id,))
-
 
 def _assign_staff_role(cursor, user_id: int, role_id: int):
     _remove_staff_assignment(cursor, user_id)
@@ -106,7 +95,7 @@ def _get_staff_user_by_ni(cursor, ni: str):
         SELECT user_id, role_id
         FROM users
         WHERE role_id IN (1, 2, 3, 4, 5)
-          AND UPPER(COALESCE(NULLIF(nickname, ''), username)) = %s
+        AND UPPER(COALESCE(NULLIF(nickname, ''), username)) = %s
         """,
         (ni.upper(),),
     )
@@ -242,7 +231,7 @@ def get_pending_residents():
     cursor = conn.cursor(dictionary=True)
     query = """
         SELECT user_id, CONCAT(first_name, ' ', last_name) AS name, created_at 
-        FROM users 
+        FROM users
         WHERE role_id = 6 AND account_status = 'Inactive'
     """
     cursor.execute(query)
@@ -275,7 +264,7 @@ def get_all_apartments():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     query = """
-        SELECT a.apartment_id, a.apartment_number, a.bedrooms, a.bathrooms, a.rent, a.status, l.city 
+        SELECT a.apartment_id, a.apartment_number, a.bedrooms, a.bathrooms, a.rent, a.status, l.city
         FROM apartments a
         LEFT JOIN locations l ON a.location_id = l.location_id
     """
@@ -290,7 +279,7 @@ def add_apartment(location_id, apartment_number, bedrooms, bathrooms, rent, stat
     cursor = conn.cursor()
     try:
         query = """
-            INSERT INTO apartments (location_id, apartment_number, bedrooms, bathrooms, rent, status) 
+            INSERT INTO apartments (location_id, apartment_number, bedrooms, bathrooms, rent, status)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
         cursor.execute(query, (location_id, apartment_number, bedrooms, bathrooms, rent, status))
@@ -298,7 +287,7 @@ def add_apartment(location_id, apartment_number, bedrooms, bathrooms, rent, stat
         success = True
     except Exception as e:
         print(f"DATABASE ERROR (Add Apartment): {e}")
-        success = False 
+        success = False
     finally:
         conn.close()
     return success
@@ -358,7 +347,7 @@ def add_lease(tenant_id, apartment_id, start_date, end_date, monthly_rent, statu
         success = True
     except Exception as e:
         print(f"DATABASE ERROR (Add Lease): {e}")
-        success = False 
+        success = False
     finally:
         conn.close()
     return success
@@ -367,13 +356,37 @@ def add_lease(tenant_id, apartment_id, start_date, end_date, monthly_rent, statu
 # --- BROADCAST QUERIES ---
 # ==========================================
 
+def get_all_residents():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT user_id, CONCAT(first_name, ' ', last_name) AS name, account_status
+        FROM users
+        WHERE role_id = 6
+    """)
+    users = cursor.fetchall()
+    conn.close()
+    return users
+
+def get_all_users():
+    """Return a list of all user IDs."""
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT user_id
+        FROM users
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [r['user_id'] for r in rows]
+
 def get_all_broadcasts():
     """Fetches all past broadcasts from the database."""
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT broadcast_id, title, target_audience, urgency, DATE(created_at) as send_date 
-        FROM broadcasts 
+        SELECT broadcast_id, title, target_audience, urgency, DATE(created_at) as send_date
+        FROM broadcasts
         ORDER BY created_at DESC
     """)
     broadcasts = cursor.fetchall()
@@ -386,7 +399,7 @@ def add_broadcast(title, target_audience, content, urgency):
     cursor = conn.cursor()
     try:
         query = """
-            INSERT INTO broadcasts (title, target_audience, content, urgency) 
+            INSERT INTO broadcasts (title, target_audience, content, urgency)
             VALUES (%s, %s, %s, %s)
         """
         cursor.execute(query, (title, target_audience, content, urgency))
@@ -394,7 +407,7 @@ def add_broadcast(title, target_audience, content, urgency):
         success = True
     except Exception as e:
         print(f"DATABASE ERROR (Add Broadcast): {e}")
-        success = False 
+        success = False
     finally:
         conn.close()
     return success

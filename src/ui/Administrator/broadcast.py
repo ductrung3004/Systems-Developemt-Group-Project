@@ -110,7 +110,7 @@ def open_broadcast_modal(dash):
     )
     content_field = ft.TextField(label="Content", multiline=True, min_lines=3,border_color=ACCENT_BLUE)
     type_field = ft.Dropdown(
-        label="Urgency Level",
+        label="Type",
         options=[
             ft.dropdown.Option("Info"),
             ft.dropdown.Option("Urgent"),
@@ -126,23 +126,57 @@ def open_broadcast_modal(dash):
         
         selected_type = type_field.value
 
-        # 1. SEND REAL NOTIFICATION VIA YOUR LOGIC
+        # Normalize selected_type: Dropdown may return a set/list in some configs
+        if isinstance(selected_type, (set, list, tuple)):
+            try:
+                selected_type = next(iter(selected_type))
+            except StopIteration:
+                selected_type = 'Info'
+
+        # Validate and restrict to allowed values only
+        if selected_type not in ('Info', 'Urgent'):
+            selected_type = 'Info'
+
+        # 1. SEND REAL NOTIFICATION
         try:
-            send_notification(
-                dash,
-                user_id=target_field.value,
-                title=title_field.value,
-                message=content_field.value
-            )
+            # Convert target dropdown to proper recipients
+            recipients_raw = []
+            if target_field.value == "All":
+                recipients_raw = db.get_all_users()
+            elif target_field.value == "All Staff":
+                recipients_raw = db.get_all_staff()
+            elif target_field.value == "All Residents":
+                recipients_raw = db.get_all_residents()
+
+            # Normalize to list of user_id integers
+            recipients = []
+            for r in recipients_raw:
+                if isinstance(r, dict):
+                    uid = r.get('user_id') or r.get('userId') or r.get('id')
+                    if uid is not None:
+                        recipients.append(uid)
+                else:
+                    recipients.append(r)
+
+            for user_id in recipients:
+                send_notification(
+                    dash,
+                    user_id=user_id,
+                    title=title_field.value,
+                    message=content_field.value
+                )
         except Exception as err:
             print(f"Notification Error: {err}")
 
         # 2. SAVE TO MYSQL DATABASE
+        # Only send 'Info' or 'Urgent' to the DB (no mapping needed)
+        db_urgency = selected_type
+
         success = db.add_broadcast(
-            title=title_field.value, 
-            target_audience=target_field.value, 
-            content=content_field.value, 
-            urgency=selected_type
+            title=title_field.value,
+            target_audience=target_field.value,
+            content=content_field.value,
+            urgency=db_urgency
         )
 
         if success:
