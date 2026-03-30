@@ -17,7 +17,7 @@ def show_notifications(dash, *args):
         value="All Types",
         width=150,
         text_style=ft.TextStyle(color=TEXT_DARK),
-        options=[ft.dropdown.Option(x) for x in ["All Types", "Billing", "Maintenance", "Security", "General"]],
+        options=[ft.dropdown.Option(x) for x in ["All Types", "Info", "Urgent"]],
     )
 
     dash.time_filter = ft.Dropdown(
@@ -73,18 +73,7 @@ def apply_notification_filters(dash, e=None):
         return
 
     # --- CONNECT DATA (DICTIONARY) ---
-    
-    if hasattr(dash, "backend"):
-        raw_data = dash.backend.get_notifications()
-    else:
-        raw_data = [
-            {"type": "Security", "title": "Parking Update", "msg": "New guest parking rules.", "date": "4 days ago", "days": 4, "unread": False},
-            {"type": "Billing", "title": "Rent Invoice Generated", "msg": "Your rent invoice for February is ready.", "date": "Today", "days": 0, "unread": True},
-            {"type": "General", "title": "Spring BBQ Party", "msg": "Join us for a BBQ party.", "date": "20 days ago", "days": 20, "unread": False},
-            {"type": "Maintenance", "title": "Elevator Repair", "msg": "Elevator maintenance in Block B.", "date": "Yesterday", "days": 1, "unread": True},
-            {"type": "Maintenance", "title": "Water Leak Fixed", "msg": "The leak in 3rd floor is fixed.", "date": "45 days ago", "days": 45, "unread": False},
-            {"type": "Billing", "title": "Payment Received", "msg": "Received payment for January.", "date": "10 days ago", "days": 10, "unread": False},
-        ]
+    raw_data = dash.backend.get_notifications()
 
     filtered = SearchEngine.apply_logic(raw_data, filters={"type": dash.type_filter.value})
 
@@ -103,7 +92,7 @@ def apply_notification_filters(dash, e=None):
         )
     else:
         shown_recent = shown_last_week = shown_older = False
-        badge_colors = {"Billing": ft.Colors.ORANGE_700, "Maintenance": ft.Colors.RED_700, "Security": ft.Colors.BLUE_GREY_900, "General": ft.Colors.BLUE_700}
+        badge_colors = {"Info": ft.Colors.BLUE_700, "Urgent": ft.Colors.RED_700}
 
         for item in final_list:
             # Header logic

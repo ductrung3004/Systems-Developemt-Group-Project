@@ -48,7 +48,7 @@ CREATE TABLE broadcasts (
     title VARCHAR(255) NOT NULL,
     content TEXT NOT NULL,
     target_audience VARCHAR(50) NOT NULL DEFAULT 'All', -- All / All Staff / All Residents
-    urgency ENUM('Info','Urgent') DEFAULT 'Low',
+    urgency ENUM('Info','Urgent') DEFAULT 'Info',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (broadcast_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -31,10 +31,11 @@ def show_user(dash, tab_index=0, *args):
         
         current_rows = []
         for staff in staff_data:
-            if search_val.lower() in staff["name"].lower() or search_val.lower() in staff["ni"].lower():
+            username = staff.get("ni") or staff.get("username") or ""
+            if search_val.lower() in staff["name"].lower() or search_val.lower() in username.lower():
                 current_rows.append(
                     ft.DataRow(cells=[
-                        ft.DataCell(ft.Text(staff["ni"], color=TEXT_DARK)),
+                        ft.DataCell(ft.Text(username, color=TEXT_DARK)),
                         ft.DataCell(ft.Text(staff["name"], color=TEXT_DARK)),
                         ft.DataCell(ft.Text(staff["role"], color=TEXT_DARK)),
                         ft.DataCell(
@@ -53,14 +54,14 @@ def show_user(dash, tab_index=0, *args):
                                 ),
                                 ft.IconButton(
                                     ft.Icons.DELETE, icon_color="red", icon_size=18,
-                                    on_click=lambda e, ni=staff["ni"]: delete_staff_record(dash, ni)
+                                    on_click=lambda e, username=username: delete_staff_record(dash, username)
                                 )
                             ])
                         ),
                     ])
                 )
         dash.staff_search = ft.TextField(
-            label="Search Staff (Name/NI)...", prefix_icon=ft.Icons.SEARCH, value=search_val,
+            label="Search Staff (Name/Username)...", prefix_icon=ft.Icons.SEARCH, value=search_val,
             expand=True, color=TEXT_DARK, border_color=ACCENT_BLUE,
             on_submit=lambda _: show_user(dash, tab_index=0)
         )
@@ -83,7 +84,7 @@ def show_user(dash, tab_index=0, *args):
             ], spacing=10),
             ft.DataTable(
                 columns=[
-                    ft.DataColumn(ft.Text("NI Number", weight="bold", color=TEXT_DARK)),
+                    ft.DataColumn(ft.Text("Username", weight="bold", color=TEXT_DARK)),
                     ft.DataColumn(ft.Text("Full Name", weight="bold", color=TEXT_DARK)),
                     ft.DataColumn(ft.Text("Role", weight="bold", color=TEXT_DARK)),
                     ft.DataColumn(ft.Text("Status", weight="bold", color=TEXT_DARK)),
@@ -207,12 +208,13 @@ def show_user(dash, tab_index=0, *args):
     dash.page.update()
 
 # --- DATABASE ACTIONS: STAFF ---
-def delete_staff_record(dash, ni):
-    db.delete_staff(ni)
-    dash.show_message(f"Staff record {ni} deleted.")
-    show_user(dash, tab_index=0) 
+def delete_staff_record(dash, username):
+    db.delete_staff(username)
+    dash.show_message(f"Staff record {username} deleted.")
+    show_user(dash, tab_index=0)
 
 def edit_staff(dash, staff):
+    username = staff.get("ni") or staff.get("username") or ""
     name_input = ft.TextField(label="Full Name", value=staff["name"], border_color=ACCENT_BLUE)
     role_input = ft.Dropdown(
         label="Role",
@@ -232,13 +234,13 @@ def edit_staff(dash, staff):
             dash.show_message("Name cannot be empty!")
             return
         
-        db.update_staff(staff["ni"], name_input.value, role_input.value, status_input.value)
+        db.update_staff(username, name_input.value, role_input.value, status_input.value)
         dash.close_dialog()
         dash.show_message("Staff updated successfully!")
         show_user(dash, tab_index=0) 
 
     content = ft.Column([
-        ft.Text(f"Editing record for NI: {staff['ni']}", weight="bold"),
+        ft.Text(f"Editing record for Username: {username}", weight="bold"),
         name_input,
         role_input,
         status_input
@@ -251,11 +253,10 @@ def edit_staff(dash, staff):
     dash.show_custom_modal("Edit Staff", content, actions)
 
 def register_staff(dash, *args):
-    ni_input = ft.TextField(
-        label="National Insurance (NI) Number",
-        hint_text="e.g. QQ123456C",
+    username_input = ft.TextField(
+        label="Username",
+        hint_text="e.g. jsmith",
         border_color=ACCENT_BLUE,
-        capitalization=ft.TextCapitalization.CHARACTERS
     )
     name_input = ft.TextField(
         label="Full Name",
@@ -270,24 +271,25 @@ def register_staff(dash, *args):
     )
 
     def handle_submit(e):
-        if not ni_input.value or not name_input.value:
+        if not username_input.value or not name_input.value:
             dash.show_message("Please fill in all required fields!")
             return
 
-        result = db.add_staff(ni_input.value.upper(), name_input.value, role_input.value)
+        # pass the username value to existing add_staff API (it expects an "ni" string)
+        result = db.add_staff(username_input.value.upper(), name_input.value, role_input.value)
         
         if result["success"]:
             dash.close_dialog()
             dash.show_message(
                 f"Staff {name_input.value} registered. Username: {result['username']} | Temporary password: {result['password']}"
             )
-            show_user(dash, tab_index=0) 
+            show_user(dash, tab_index=0)
         else:
             dash.show_message(f"Error: Could not save staff record. {result.get('error', '')}")
 
     content = ft.Column([
         ft.Text("Register a new staff member for this branch."),
-        ni_input,
+        username_input,
         name_input,
         role_input,
         ft.Text("Note: Default status will be set to 'Active'.", size=11, italic=True)

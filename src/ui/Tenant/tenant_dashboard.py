@@ -60,59 +60,67 @@ class TenantDashboard(BaseDashboard):
             ]
         )
         
-        # CHART + TABLE AREA
-        chart_table_row = ft.Row(
-            spacing=20,
-            controls=[
-                ft.Container(
-                    bgcolor=CARD_BG,
-                    padding=25,
-                    border_radius=12,
-                    width=600,
-                    height=350,
-                    content=ft.Column(
-                        spacing=10,
-                        controls=[
-                            ft.Text("Payments History", size=16, weight=ft.FontWeight.BOLD, color=TEXT_DARK),
-                            ft.Container(
-                                expand=True,
-                                bgcolor="#F9FAFB",
-                                border=ft.Border.all(1, "#E5E7EB"),
-                                border_radius=8,
-                                alignment=ft.alignment.center if hasattr(ft.alignment, "center") else "center",
-                                content=ft.Text("Chart Placeholder", color=TEXT_MUTED)
-                            )
-                        ]
-                    )
-                ),
-
-                ft.Container(
-                    bgcolor=CARD_BG,
-                    padding=25,
-                    border_radius=12,
-                    expand=True,
-                    height=350,
-                    content=ft.Column(
-                        controls=[
-                            ft.Text("Announcements", size=16, weight=ft.FontWeight.BOLD, color=TEXT_DARK),
-                            ft.Divider(height=1, color="#F3F4F6"),
-                            # Example announcements (replace with dynamic content later)
-                            ft.ListTile(
-                                leading=ft.Icon(ft.Icons.INFO_OUTLINE, color=ACCENT_BLUE),
-                                title=ft.Text("Maintenance", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
-                                subtitle=ft.Text("On this Sunday, from 8:00 to 12:00.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
-                            ),
-                            ft.ListTile(
-                                leading=ft.Icon(ft.Icons.CAMPAIGN_OUTLINED, color=ACCENT_BLUE),
-                                title=ft.Text("Garbage Collection", weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
-                                subtitle=ft.Text("Please place garbage in the designated area before 7:00 AM.", color=ft.Colors.BLACK87,weight=ft.FontWeight.W_500),
-                            ),
-                        ]
+        # CHART + TABLE AREA (Payments list + Announcements from DB)
+        payments_list = (self.backend.get_payments() if hasattr(self, "backend") else [])
+        payment_controls = [
+            ft.Text("Payments History", size=16, weight=ft.FontWeight.BOLD, color=TEXT_DARK),
+            ft.Divider(height=1, color="#F3F4F6")
+        ]
+        if payments_list:
+            for p in payments_list[:5]:
+                title = p.get("description") or f"Payment"
+                amount = p.get("amount", 0.0)
+                status = p.get("status", "Paid")
+                method = p.get("method", "Unknown")
+                date_str = p.get("date") or ""
+                icon = ft.Icons.PAYMENTS_ROUNDED if status.lower() == "paid" else ft.Icons.PAYMENT
+                payment_controls.append(
+                    ft.ListTile(
+                        leading=ft.Icon(icon, color=ACCENT_BLUE),
+                        title=ft.Text(title, weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
+                        subtitle=ft.Text(f"Amount: £{amount:.2f} — {method} — {status}", color=ft.Colors.BLACK87),
+                        trailing=ft.Text(date_str, color=ft.Colors.GREY_500, size=12),
                     )
                 )
-                
-            ]
+        else:
+            payment_controls.append(ft.Container(content=ft.Text("No payments recorded.", weight=ft.FontWeight.BOLD), padding=30, alignment=ft.Alignment(0,0)))
+
+        payments_container = ft.Container(
+            bgcolor=CARD_BG,
+            padding=25,
+            border_radius=12,
+            width=600,
+            height=350,
+            content=ft.Column(spacing=10, controls=payment_controls)
         )
+
+        # Announcements from backend (limit 5)
+        notif_list = (self.backend.get_notifications() if hasattr(self, "backend") else [])
+        announcement_controls = [ft.Text("Announcements", size=16, weight=ft.FontWeight.BOLD, color=TEXT_DARK), ft.Divider(height=1, color="#F3F4F6")]
+        if notif_list:
+            for item in notif_list[:5]:
+                icon_name = {"Info": ft.Icons.INFO_OUTLINE, "Urgent": ft.Icons.CAMPAIGN_OUTLINED}.get(item.get("type"), ft.Icons.INFO_OUTLINE)
+                announcement_controls.append(
+                    ft.ListTile(
+                        leading=ft.Icon(icon_name, color=ACCENT_BLUE),
+                        title=ft.Text(item.get("title", "(no title)"), weight=ft.FontWeight.BOLD, color=TEXT_DARK, size=14),
+                        subtitle=ft.Text(item.get("msg", ""), color=ft.Colors.BLACK87, weight=ft.FontWeight.W_500),
+                        trailing=ft.Text(item.get("date", ""), color=ft.Colors.GREY_500, size=12),
+                    )
+                )
+        else:
+            announcement_controls.append(ft.Container(content=ft.Text("No announcements.", weight=ft.FontWeight.BOLD), padding=30, alignment=ft.Alignment(0,0)))
+
+        announcements_container = ft.Container(
+            bgcolor=CARD_BG,
+            padding=25,
+            border_radius=12,
+            expand=True,
+            height=350,
+            content=ft.Column(controls=announcement_controls)
+        )
+
+        chart_table_row = ft.Row(spacing=20, controls=[payments_container, announcements_container])
         self.content_column.controls = [
             stat_cards,chart_table_row
         ]

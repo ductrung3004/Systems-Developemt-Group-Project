@@ -280,10 +280,24 @@ class TenantBackend:
 
 
     def get_notifications(self):
-        return []
+        # If no user_id set, return empty list
+        if self.user_id is None:
+            return []
+        try:
+            # Import here to avoid circular imports at module import time
+            from .notifications import fetch_notifications_for_user
+
+            return fetch_notifications_for_user(self.user_id)
+        except Exception:
+            return []
 
     def mark_notification_read(self, notification_id):
-        return False
+        try:
+            from .notifications import mark_notification_read as _mark
+
+            return bool(_mark(notification_id))
+        except Exception:
+            return False
 
     def get_tenant_record(self):
         if self.user_id is None:

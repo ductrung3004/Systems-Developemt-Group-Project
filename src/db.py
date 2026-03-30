@@ -488,7 +488,7 @@ def update_user_profile(user_id, first_name, last_name, email, phone_number):
     try:
         # I added phone_number to this UPDATE query!
         cursor.execute("""
-            UPDATE users 
+            UPDATE users
             SET first_name = %s, last_name = %s, email = %s, phone_number = %s
             WHERE user_id = %s
         """, (first_name, last_name, email, phone_number, user_id))
@@ -525,10 +525,10 @@ def get_security_logs():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT event_description as event, severity_color as color, 
-               DATE_FORMAT(created_at, '%H:%i:%s') as time 
-        FROM security_logs 
-        ORDER BY created_at DESC 
+        SELECT event_description as event, severity_color as color,
+               DATE_FORMAT(created_at, '%H:%i:%s') as time
+        FROM security_logs
+        ORDER BY created_at DESC
         LIMIT 50
     """)
     logs = cursor.fetchall()
