@@ -11,7 +11,7 @@
  Target Server Version : 90001 (9.0.1)
  File Encoding         : 65001
 
- Date: 01/04/2026 18:19:43
+ Date: 01/04/2026 19:00:06
 */
 
 SET NAMES utf8mb4;
@@ -87,7 +87,7 @@ CREATE TABLE `apartments` (
 -- Records of apartments
 -- ----------------------------
 BEGIN;
-INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (1, 1, 'A101', 2, 1, 1200.00, 'Available');
+INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (1, 1, 'A101', 2, 1, 1200.00, 'Occupied');
 INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (2, 1, 'A102', 1, 1, 900.00, 'Occupied');
 INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (3, 2, 'B201', 3, 2, 1500.00, 'Available');
 COMMIT;
@@ -250,13 +250,14 @@ CREATE TABLE `lease_agreements` (
   KEY `apartment_id` (`apartment_id`),
   CONSTRAINT `lease_agreements_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`),
   CONSTRAINT `lease_agreements_ibfk_2` FOREIGN KEY (`apartment_id`) REFERENCES `apartments` (`apartment_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of lease_agreements
 -- ----------------------------
 BEGIN;
 INSERT INTO `lease_agreements` (`lease_id`, `tenant_id`, `apartment_id`, `start_date`, `end_date`, `monthly_rent`, `status`) VALUES (1, 1, 2, '2025-01-01', '2025-12-31', 900.00, 'Active');
+INSERT INTO `lease_agreements` (`lease_id`, `tenant_id`, `apartment_id`, `start_date`, `end_date`, `monthly_rent`, `status`) VALUES (2, 3, 1, '2026-04-01', '2027-04-01', 1200.00, 'Active');
 COMMIT;
 
 -- ----------------------------
@@ -286,6 +287,7 @@ DROP TABLE IF EXISTS `maintenance_requests`;
 CREATE TABLE `maintenance_requests` (
   `request_id` int NOT NULL AUTO_INCREMENT,
   `tenant_id` int NOT NULL,
+  `created_by_frontdesk` int DEFAULT NULL,
   `apartment_id` int NOT NULL,
   `description` text NOT NULL,
   `status` enum('Pending','In Progress','Resolved') DEFAULT 'Pending',
@@ -296,19 +298,24 @@ CREATE TABLE `maintenance_requests` (
   KEY `tenant_id` (`tenant_id`),
   KEY `apartment_id` (`apartment_id`),
   KEY `assigned_to` (`assigned_to`),
+  KEY `created_by_frontdesk` (`created_by_frontdesk`),
   CONSTRAINT `maintenance_requests_ibfk_1` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`),
   CONSTRAINT `maintenance_requests_ibfk_2` FOREIGN KEY (`apartment_id`) REFERENCES `apartments` (`apartment_id`),
-  CONSTRAINT `maintenance_requests_ibfk_3` FOREIGN KEY (`assigned_to`) REFERENCES `maintenance_staff` (`maintenance_staff_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  CONSTRAINT `maintenance_requests_ibfk_3` FOREIGN KEY (`assigned_to`) REFERENCES `maintenance_staff` (`maintenance_staff_id`),
+  CONSTRAINT `maintenance_requests_ibfk_frontdesk` FOREIGN KEY (`created_by_frontdesk`) REFERENCES `frontdesk_staff` (`frontdesk_staff_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of maintenance_requests
 -- ----------------------------
 BEGIN;
-INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (2, 1, 2, 'Leaking sink in kitchen', 'Resolved', '2026-03-17 00:17:55', 1, '2026-04-01 18:16:21');
-INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (3, 2, 1, 'fixing light pub', 'Pending', '2026-03-18 17:39:59', NULL, NULL);
-INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (4, 1, 2, 'Leaky sink', 'Pending', '2026-03-18 17:46:01', NULL, NULL);
-INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (5, 1, 1, 'testing maintenance queue', 'Pending', '2026-03-18 17:58:46', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (2, 1, NULL, 2, 'Leaking sink in kitchen', 'Resolved', '2026-03-17 00:17:55', 1, '2026-04-01 18:16:21');
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (3, 2, NULL, 1, 'fixing light pub', 'Pending', '2026-03-18 17:39:59', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (4, 1, NULL, 2, 'Leaky sink', 'Pending', '2026-03-18 17:46:01', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (5, 1, NULL, 1, 'testing maintenance queue', 'Pending', '2026-03-18 17:58:46', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (6, 1, NULL, 2, 'Front desk test order without requested by', 'Pending', '2026-04-01 18:51:18', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (7, 1, NULL, 2, 'adsf', 'Pending', '2026-04-01 18:53:09', NULL, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `created_by_frontdesk`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (8, 1, 1, 2, 'Front desk requester label test', 'Pending', '2026-04-01 18:55:01', NULL, NULL);
 COMMIT;
 
 -- ----------------------------
@@ -479,7 +486,7 @@ CREATE TABLE `tenants` (
   UNIQUE KEY `ni_number` (`ni_number`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `tenants_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- ----------------------------
 -- Records of tenants
@@ -487,6 +494,7 @@ CREATE TABLE `tenants` (
 BEGIN;
 INSERT INTO `tenants` (`tenant_id`, `user_id`, `ni_number`, `occupation`) VALUES (1, 35, 'NI123456A', 'Software Engineer');
 INSERT INTO `tenants` (`tenant_id`, `user_id`, `ni_number`, `occupation`) VALUES (2, 42, 'NI987654B', 'Teacher');
+INSERT INTO `tenants` (`tenant_id`, `user_id`, `ni_number`, `occupation`) VALUES (3, 41, '13413', 'Officers');
 COMMIT;
 
 -- ----------------------------
