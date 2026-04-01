@@ -1,17 +1,17 @@
 /*
-Navicat Premium Dump SQL
+ Navicat Premium Dump SQL
 
-Source Server         : Local MySQL
-Source Server Type    : MySQL
-Source Server Version : 90001 (9.0.1)
-Source Host           : localhost:3306
-Source Schema         : paragon_db
+ Source Server         : Local MySQL
+ Source Server Type    : MySQL
+ Source Server Version : 90001 (9.0.1)
+ Source Host           : localhost:3306
+ Source Schema         : paragon_db
 
-Target Server Type    : MySQL
-Target Server Version : 90001 (9.0.1)
-File Encoding         : 65001
+ Target Server Type    : MySQL
+ Target Server Version : 90001 (9.0.1)
+ File Encoding         : 65001
 
-Date: 18/03/2026 19:18:57
+ Date: 01/04/2026 18:19:43
 */
 
 SET NAMES utf8mb4;
@@ -37,37 +37,6 @@ CREATE TABLE `administrators` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `administrators` (`admin_id`, `user_id`, `location_id`) VALUES (4, 36, 1);
-COMMIT;
-
--- ----------------------------
--- Table structure for broadcasts
--- ----------------------------
-DROP TABLE IF EXISTS broadcasts;
-CREATE TABLE broadcasts (
-    broadcast_id INT NOT NULL AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    content TEXT NOT NULL,
-    target_audience VARCHAR(50) NOT NULL DEFAULT 'All', -- All / All Staff / All Residents
-    urgency ENUM('Info','Urgent') DEFAULT 'Info',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (broadcast_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-DROP TABLE IF EXISTS broadcast_targets;
-
-BEGIN;
--- Send All
-INSERT INTO broadcasts (title, content, target_audience, urgency)
-VALUES ('System Maintenance', 'The system will be down from 10 PM to 12 AM', 'All', 'Info');
-
--- Send All Staffs
-INSERT INTO broadcasts (title, content, target_audience, urgency)
-VALUES ('Staff Meeting', 'Please join the staff meeting at 3 PM', 'All Staff', 'Urgent');
-
--- Send tenants
-INSERT INTO broadcasts (title, content, target_audience, urgency)
-VALUES ('Rent Reminder', 'Please pay your rent before the 5th of each month', 'All Residents', 'Info');
-
 COMMIT;
 
 -- ----------------------------
@@ -121,6 +90,29 @@ BEGIN;
 INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (1, 1, 'A101', 2, 1, 1200.00, 'Available');
 INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (2, 1, 'A102', 1, 1, 900.00, 'Occupied');
 INSERT INTO `apartments` (`apartment_id`, `location_id`, `apartment_number`, `bedrooms`, `bathrooms`, `rent`, `status`) VALUES (3, 2, 'B201', 3, 2, 1500.00, 'Available');
+COMMIT;
+
+-- ----------------------------
+-- Table structure for broadcasts
+-- ----------------------------
+DROP TABLE IF EXISTS `broadcasts`;
+CREATE TABLE `broadcasts` (
+  `broadcast_id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `content` text NOT NULL,
+  `target_audience` varchar(50) NOT NULL DEFAULT 'All',
+  `urgency` enum('Info','Urgent') DEFAULT 'Info',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`broadcast_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Records of broadcasts
+-- ----------------------------
+BEGIN;
+INSERT INTO `broadcasts` (`broadcast_id`, `title`, `content`, `target_audience`, `urgency`, `created_at`) VALUES (1, 'System Maintenance', 'The system will be down from 10 PM to 12 AM', 'All', 'Info', '2026-04-01 13:36:31');
+INSERT INTO `broadcasts` (`broadcast_id`, `title`, `content`, `target_audience`, `urgency`, `created_at`) VALUES (2, 'Staff Meeting', 'Please join the staff meeting at 3 PM', 'All Staff', 'Urgent', '2026-04-01 13:36:31');
+INSERT INTO `broadcasts` (`broadcast_id`, `title`, `content`, `target_audience`, `urgency`, `created_at`) VALUES (3, 'Rent Reminder', 'Please pay your rent before the 5th of each month', 'All Residents', 'Info', '2026-04-01 13:36:31');
 COMMIT;
 
 -- ----------------------------
@@ -212,39 +204,6 @@ CREATE TABLE `frontdesk_staff` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `frontdesk_staff` (`frontdesk_staff_id`, `user_id`, `location_id`, `hire_date`) VALUES (1, 38, 1, '2024-03-01');
-COMMIT;
-
--- ----------------------------
--- Table structure for parcels
--- ----------------------------
-DROP TABLE IF EXISTS `parcels`;
-CREATE TABLE `parcels` (
-  `parcel_id` int NOT NULL AUTO_INCREMENT,
-  `apartment_id` int NOT NULL,
-  `tenant_id` int DEFAULT NULL,
-  `logged_by` int DEFAULT NULL,
-  `recipient_name` varchar(120) DEFAULT NULL,
-  `carrier` varchar(100) NOT NULL,
-  `storage_type` enum('Standard','Cold/Food','Fragile/Large') DEFAULT 'Standard',
-  `note` text,
-  `status` enum('Pending','Picked Up') DEFAULT 'Pending',
-  `received_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `picked_up_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`parcel_id`),
-  KEY `apartment_id` (`apartment_id`),
-  KEY `tenant_id` (`tenant_id`),
-  KEY `logged_by` (`logged_by`),
-  CONSTRAINT `parcels_ibfk_1` FOREIGN KEY (`apartment_id`) REFERENCES `apartments` (`apartment_id`),
-  CONSTRAINT `parcels_ibfk_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`),
-  CONSTRAINT `parcels_ibfk_2` FOREIGN KEY (`logged_by`) REFERENCES `frontdesk_staff` (`frontdesk_staff_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- ----------------------------
--- Records of parcels
--- ----------------------------
-BEGIN;
-INSERT INTO `parcels` (`parcel_id`, `apartment_id`, `tenant_id`, `logged_by`, `recipient_name`, `carrier`, `storage_type`, `note`, `status`, `received_at`, `picked_up_at`) VALUES (1, 2, 1, 1, 'C D', 'Amazon', 'Standard', 'Leave at front desk', 'Pending', '2026-03-18 10:30:00', NULL);
-INSERT INTO `parcels` (`parcel_id`, `apartment_id`, `tenant_id`, `logged_by`, `recipient_name`, `carrier`, `storage_type`, `note`, `status`, `received_at`, `picked_up_at`) VALUES (2, 1, NULL, 1, 'Emma Clark', 'Deliveroo', 'Cold/Food', 'Keep chilled', 'Picked Up', '2026-03-18 11:45:00', '2026-03-18 12:15:00');
 COMMIT;
 
 -- ----------------------------
@@ -346,7 +305,7 @@ CREATE TABLE `maintenance_requests` (
 -- Records of maintenance_requests
 -- ----------------------------
 BEGIN;
-INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (2, 1, 2, 'Leaking sink in kitchen', 'Pending', '2026-03-17 00:17:55', 1, NULL);
+INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (2, 1, 2, 'Leaking sink in kitchen', 'Resolved', '2026-03-17 00:17:55', 1, '2026-04-01 18:16:21');
 INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (3, 2, 1, 'fixing light pub', 'Pending', '2026-03-18 17:39:59', NULL, NULL);
 INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (4, 1, 2, 'Leaky sink', 'Pending', '2026-03-18 17:46:01', NULL, NULL);
 INSERT INTO `maintenance_requests` (`request_id`, `tenant_id`, `apartment_id`, `description`, `status`, `reported_at`, `assigned_to`, `resolved_at`) VALUES (5, 1, 1, 'testing maintenance queue', 'Pending', '2026-03-18 17:58:46', NULL, NULL);
@@ -395,6 +354,39 @@ CREATE TABLE `managers` (
 -- ----------------------------
 BEGIN;
 INSERT INTO `managers` (`manager_id`, `user_id`, `location_id`) VALUES (2, 37, 1);
+COMMIT;
+
+-- ----------------------------
+-- Table structure for parcels
+-- ----------------------------
+DROP TABLE IF EXISTS `parcels`;
+CREATE TABLE `parcels` (
+  `parcel_id` int NOT NULL AUTO_INCREMENT,
+  `apartment_id` int NOT NULL,
+  `tenant_id` int DEFAULT NULL,
+  `logged_by` int DEFAULT NULL,
+  `recipient_name` varchar(120) DEFAULT NULL,
+  `carrier` varchar(100) NOT NULL,
+  `storage_type` enum('Standard','Cold/Food','Fragile/Large') DEFAULT 'Standard',
+  `note` text,
+  `status` enum('Pending','Picked Up') DEFAULT 'Pending',
+  `received_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `picked_up_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`parcel_id`),
+  KEY `apartment_id` (`apartment_id`),
+  KEY `tenant_id` (`tenant_id`),
+  KEY `logged_by` (`logged_by`),
+  CONSTRAINT `parcels_ibfk_1` FOREIGN KEY (`apartment_id`) REFERENCES `apartments` (`apartment_id`),
+  CONSTRAINT `parcels_ibfk_2` FOREIGN KEY (`logged_by`) REFERENCES `frontdesk_staff` (`frontdesk_staff_id`),
+  CONSTRAINT `parcels_ibfk_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`tenant_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- ----------------------------
+-- Records of parcels
+-- ----------------------------
+BEGIN;
+INSERT INTO `parcels` (`parcel_id`, `apartment_id`, `tenant_id`, `logged_by`, `recipient_name`, `carrier`, `storage_type`, `note`, `status`, `received_at`, `picked_up_at`) VALUES (1, 2, 1, 1, 'C D', 'Amazon', 'Standard', 'Leave at front desk', 'Pending', '2026-03-18 10:30:00', NULL);
+INSERT INTO `parcels` (`parcel_id`, `apartment_id`, `tenant_id`, `logged_by`, `recipient_name`, `carrier`, `storage_type`, `note`, `status`, `received_at`, `picked_up_at`) VALUES (2, 1, NULL, 1, 'Emma Clark', 'Deliveroo', 'Cold/Food', 'Keep chilled', 'Picked Up', '2026-03-18 11:45:00', '2026-03-18 12:15:00');
 COMMIT;
 
 -- ----------------------------
@@ -530,11 +522,10 @@ INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_n
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (35, 6, 'tenant', '$2b$12$72IjhjLYN/2Oxp6EGaSgwOJpY.irGNEJBsZQFJgqChnD3cc3V/3Lu', 'C', 'D', 'x@y.com', '123', 'Active', '2026-03-16 23:59:20', 'NewNick', '1990-01-01');
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (36, 1, 'admin1', 'hash_admin', 'John', 'Smith', 'admin1@email.com', '0700000001', 'Active', '2026-03-17 00:10:28', NULL, NULL);
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (37, 2, 'manager1', 'hash_manager', 'Alice', 'Brown', 'manager@email.com', '0700000002', 'Active', '2026-03-17 00:10:28', NULL, NULL);
-INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (38, 3, 'frontdesk1', 'hash_fd', 'Mark', 'Lee', 'frontdesk@email.com', '0700000003', 'Active', '2026-03-17 00:10:28', NULL, NULL);
-INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (39, 4, 'maint1', 'hash_maint', 'Bob', 'Taylor', 'maint@email.com', '0700000004', 'Active', '2026-03-17 00:10:28', NULL, NULL);
+INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (38, 3, 'frontdesk', '$2b$12$dDTzIFzXc6YgWTqbm6ObOO91ZKBd5F9O16.NlLQvhQAcxS81bCfF2', 'Mark', 'Lee', 'frontdesk@email.com', '0700000003', 'Active', '2026-03-17 00:10:28', NULL, NULL);
+INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (39, 4, 'maint1', '$2b$12$VBDzP7SWtITlRRONZn2rXe/aVNKC1zKLeuSgqMXAO48evKigWJSgO', 'Bob', 'Taylor', 'maint@email.com', '0700000004', 'Active', '2026-03-17 00:10:28', NULL, NULL);
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (40, 5, 'finance1', 'hash_finance', 'Sarah', 'White', 'finance@email.com', '0700000005', 'Active', '2026-03-17 00:10:28', NULL, NULL);
 INSERT INTO `users` (`user_id`, `role_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `account_status`, `created_at`, `nickname`, `dob`) VALUES (41, 6, 'tenant1', 'hash_tenant', 'David', 'Green', 'tenant@email.com', '0700000006', 'Active', '2026-03-17 00:10:28', NULL, NULL);
-
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;
