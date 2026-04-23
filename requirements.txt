@@ -1,0 +1,5 @@
+flet==0.80.5
+flet-charts==0.80.5
+mysql-connector-python==9.6.0
+bcrypt==5.0.0
+python-dotenv==1.2.2

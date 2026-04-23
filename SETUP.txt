@@ -1,0 +1,243 @@
+================================================================
+  PARAGON PROPERTY MANAGEMENT SYSTEM (PAMS)
+  Setup & User Guide
+================================================================
+
+PROJECT INFO
+------------
+System Name : Paragon Property Management System (PAMS)
+Module      : Software Development Group Project (SDGP)
+University  : University of the West of England (UWE Bristol)
+Language    : Python 3.10+
+UI Framework: Flet 0.80.5
+Database    : MySQL 9.0+
+
+
+----------------------------------------------------------------
+SECTION 1 — PREREQUISITES
+----------------------------------------------------------------
+
+Before running the system, ensure the following are installed:
+
+  1. Python 3.10 or higher
+     Download: https://www.python.org/downloads/
+
+  2. MySQL Server 9.0 or higher
+     Download: https://dev.mysql.com/downloads/mysql/
+
+  3. pip (comes with Python — verify with: pip --version)
+
+
+----------------------------------------------------------------
+SECTION 2 — DATABASE SETUP
+----------------------------------------------------------------
+
+Step 1: Open MySQL Workbench or your preferred MySQL client.
+
+Step 2: Create the database:
+        CREATE DATABASE paragon_db;
+
+Step 3: Import the provided SQL dump:
+
+        Using MySQL command line:
+        > mysql -u root -p paragon_db < Database/paragon_db.sql
+
+        Or in MySQL Workbench:
+        Server > Data Import > Import from Self-Contained File
+        Select: Database/paragon_db.sql
+        Target Schema: paragon_db
+        Click: Start Import
+
+
+----------------------------------------------------------------
+SECTION 3 — ENVIRONMENT CONFIGURATION
+----------------------------------------------------------------
+
+The system reads database credentials from a .env file located
+in the project root folder (same level as the src/ folder).
+
+Create a file named exactly:  .env
+
+Paste the following content and fill in your MySQL details:
+
+        DB_HOST=localhost
+        DB_USER=root
+        DB_PASSWORD=your_mysql_password_here
+        DB_NAME=paragon_db
+
+NOTE: Do not add quotes around the values. Save the file.
+
+
+----------------------------------------------------------------
+SECTION 4 — INSTALL DEPENDENCIES
+----------------------------------------------------------------
+
+Open a terminal/command prompt in the project root folder and run:
+
+        pip install -r requirements.txt
+
+This installs all required packages:
+  - flet==0.80.5                (Desktop UI)
+  - flet-charts==0.80.5         (Charts and graphs)
+  - mysql-connector-python      (MySQL connection)
+  - bcrypt                      (Password security)
+  - python-dotenv               (Environment variables)
+
+
+----------------------------------------------------------------
+SECTION 5 — RUNNING THE APPLICATION
+----------------------------------------------------------------
+
+From the project root folder, run:
+
+        python src/main.py
+
+Or using the Flet CLI:
+
+        flet run src/main.py
+
+The login screen will appear. Use the credentials below.
+
+
+----------------------------------------------------------------
+SECTION 6 — DEFAULT LOGIN CREDENTIALS
+----------------------------------------------------------------
+
+  NOTE: Staff accounts are created by the Administrator.
+  Staff username  = NI number (lowercase, letters and digits only)
+  Staff password  = Paragon@ followed by the last 4 characters
+                    of the NI number
+  Example: NI = AB123456C → username: ab123456c
+                           → password: Paragon@456C
+
+  ADMINISTRATOR
+  -------------
+  Username : (NI-based username set by system)
+  Password : Paragon@[last 4 of NI]
+  Access   : Full system — broadcasts, user management,
+             apartments, leases, operations
+
+  FRONT DESK STAFF
+  ----------------
+  Username : (NI-based username set by system)
+  Password : Paragon@[last 4 of NI]
+  Access   : Approve tenants, assign apartments, parcels,
+             maintenance requests
+
+  TENANT (Self-registered)
+  ------------------------
+  Username : Chosen at registration
+  Password : Chosen at registration
+  Status   : Account starts Inactive — must be approved by
+             Front Desk before login is allowed
+
+  MAINTENANCE STAFF
+  -----------------
+  Username : (NI-based username set by system)
+  Password : Paragon@[last 4 of NI]
+  Access   : View and resolve assigned work orders
+
+  FINANCE MANAGER
+  ---------------
+  Username : (NI-based username set by system)
+  Password : Paragon@[last 4 of NI]
+  Access   : Invoices, transactions, financial reports,
+             monthly billing, VAT reports
+
+  MANAGER
+  -------
+  Username : (NI-based username set by system)
+  Password : Paragon@[last 4 of NI]
+  Access   : Occupancy analytics, financial reports,
+             expansion planning (read-only overview)
+
+
+----------------------------------------------------------------
+SECTION 7 — SYSTEM WORKFLOW OVERVIEW
+----------------------------------------------------------------
+
+  1. Administrator creates staff accounts (Front Desk, Finance,
+     Maintenance, Manager) via User Management.
+
+  2. Tenant registers via the Register screen on the login page.
+     Their account is created with status Inactive.
+
+  3. Front Desk logs in and approves the tenant account by
+     entering the tenant's NI number and occupation.
+
+  4. Front Desk assigns an available apartment to the approved
+     tenant, setting lease dates and monthly rent.
+
+  5. Tenant can now log in to view their lease, submit
+     maintenance requests, view invoices, and make payments.
+
+  6. Front Desk or Tenant submits a maintenance request.
+     Front Desk assigns the request to a Maintenance Staff member.
+
+  7. Maintenance Staff logs in to view assigned work orders,
+     starts the work, and submits a completion report to resolve it.
+
+  8. Finance Manager manages invoices, runs monthly billing,
+     records payments, and generates VAT reports.
+
+  9. Manager views live occupancy and revenue analytics across
+     all branch locations (London, Manchester, Bristol, Cardiff).
+
+ 10. Administrator can broadcast notifications to all users or
+     specific groups (All Staff / All Residents).
+
+
+----------------------------------------------------------------
+SECTION 8 — PROJECT STRUCTURE
+----------------------------------------------------------------
+
+  src/
+  ├── main.py                        Entry point
+  ├── db.py                          Database queries
+  ├── login.py                       Authentication logic
+  ├── register.py                    Tenant registration logic
+  ├── pwhash.py                      Password hashing (bcrypt)
+  ├── backend/
+  │   ├── FrontDesk/frontdesk.py     Front Desk backend logic
+  │   ├── Maintance/                 Maintenance backend logic
+  │   └── Tenant/tenant.py          Tenant backend logic
+  ├── logic/
+  │   ├── notifications.py           Notification system
+  │   └── search.py                  Search/filter engine
+  └── ui/
+      ├── Administrator/             Admin dashboards
+      ├── Finance/                   Finance dashboards
+      ├── FrontDesk/                 Front Desk dashboards
+      ├── Maintenance/               Maintenance dashboards
+      ├── Manager/                   Manager dashboards
+      ├── Tenant/                    Tenant dashboards
+      ├── base_dashboard.py          Shared base UI class
+      ├── login_dashboard.py         Login screen
+      └── register_dashboard.py      Registration screen
+
+  Database/
+  └── paragon_db.sql                 Full MySQL database dump
+
+  requirements.txt                   Python package list
+  .env                               Database credentials (create this)
+
+
+----------------------------------------------------------------
+SECTION 9 — ADDITIONAL NOTES
+----------------------------------------------------------------
+
+  - The system requires an active MySQL connection at startup.
+    If the database is not reachable, the login will fail.
+
+  - The .env file must exist in the project root before running.
+    Do not commit your .env file to version control.
+
+  - All program files include the student ID and name of the
+    author in a comment at the top of each file.
+
+  - Python virtual environment folders (venv/, .venv/) and the
+    build/ folder are excluded from the submission ZIP.
+
+================================================================
+  END OF SETUP GUIDE
+================================================================
