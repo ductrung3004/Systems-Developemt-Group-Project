@@ -14,7 +14,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
 
 
 if __name__ == "__main__":
-    pw = "maint1!"
+    pw = "finance1!"
     h = hash_password(pw)
     print("example hash:", h)
     print("verify maintenance:", verify_password("maint1!", h))
